@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: sdp-software
+  messages:
+    basename: locales/messages
+  jpa:
+    open-in-view: false
+  profiles:
+    active: ${PROFILES_ACTIVE:dev}
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
+      repositories:
+        enabled: false
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /docs
+  override-with-generic-response: false

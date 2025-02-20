@@ -1,0 +1,17 @@
+name: sdp-software
+services:
+  mysql:
+    image: mysql:8.1
+    container_name: sdp-software-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: software_db
+    ports:
+      - "3306:3306"
+#    volumes:
+#      - mysql:/var/lib/mysql
+#volumes:
+#  mysql:
+#    name: sdp-notification-db

@@ -1,0 +1,198 @@
+package io.github.nhatbangle.sdp.software.service.deployment;
+
+import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
+import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
+import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessCreateRequest;
+import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessResponse;
+import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessMemberUpdateRequest;
+import io.github.nhatbangle.sdp.software.entity.User;
+import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasUserId;
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcessHasUser;
+import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
+import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentProcessMapper;
+import io.github.nhatbangle.sdp.software.repository.UserRepository;
+import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessHasUserRepository;
+import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessRepository;
+import io.github.nhatbangle.sdp.software.service.CustomerService;
+import io.github.nhatbangle.sdp.software.service.UserService;
+import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.UUID;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.MessageSource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.*;
+
+@Slf4j
+@Service
+@Validated
+@RequiredArgsConstructor
+@CacheConfig(cacheNames = "sdp_software-deployment_process")
+public class DeploymentProcessService {
+
+    private final MessageSource messageSource;
+    private final UserService userService;
+    private final DeploymentProcessRepository repository;
+    private final DeploymentProcessMapper mapper;
+    private final SoftwareVersionService softwareVersionService;
+    private final CustomerService customerService;
+    private final DeploymentProcessHasUserRepository processHasUserRepository;
+    private final UserRepository userRepository;
+
+    @NotNull
+    public PagingWrapper<DeploymentProcessResponse> getAll(
+            @Nullable String softwareVersionName,
+            @Nullable String customerName,
+            @Nullable DeploymentProcessStatus status,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
+        var page = repository
+                .findAllBySoftwareVersion_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
+                        Objects.requireNonNullElse(softwareVersionName, ""),
+                        Objects.requireNonNullElse(customerName, ""),
+                        status,
+                        pageable
+                )
+                .map(mapper::toResponse);
+        return PagingWrapper.fromPage(page);
+    }
+
+    @NotNull
+    @Cacheable(key = "#processId")
+    public DeploymentProcessResponse getById(
+            @Min(0) @NotNull Long processId
+    ) throws NoSuchElementException {
+        var process = repository.findInfoById(processId)
+                .orElseThrow(() -> notFoundHandler(processId));
+        return mapper.toResponse(process);
+    }
+
+    @NotNull
+    @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
+    public List<String> getAllMembers(
+            @Min(0) @NotNull Long processId
+    ) throws NoSuchElementException {
+        var members = processHasUserRepository
+                .findAllById_ProcessId(processId, Sort.by("createdAt").ascending());
+        return members.stream().map(member -> member.getId().getUserId()).toList();
+    }
+
+    @NotNull
+    @Transactional
+    @CachePut(key = "#result.id()")
+    public DeploymentProcessResponse create(
+            @UUID @NotNull String userId,
+            @NotNull @Valid DeploymentProcessCreateRequest request
+    ) throws IllegalArgumentException, ServiceUnavailableException {
+        var user = userService.getById(userId);
+        var version = softwareVersionService.findById(request.softwareVersionId());
+        var customer = customerService.findById(request.customerId());
+        var process = repository.save(DeploymentProcess.builder()
+                .softwareVersion(version)
+                .customer(customer)
+                .creator(user)
+                .build());
+
+        var members = request.memberIds().stream()
+                .map(memberId -> memberIdToEntity(memberId, process))
+                .toList();
+        processHasUserRepository.saveAll(members);
+
+        return mapper.toResponse(process);
+    }
+
+    @Transactional
+    @CacheEvict(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
+    public void updateMember(
+            @Min(0) @NotNull Long processId,
+            @NotNull @Valid DeploymentProcessMemberUpdateRequest request
+    ) throws NoSuchElementException, IllegalArgumentException {
+        var process = findById(processId);
+        switch (request.operator()) {
+            case ADD -> {
+                var member = memberIdToEntity(request.memberId(), process);
+                processHasUserRepository.save(member);
+            }
+            case REMOVE -> processHasUserRepository
+                    .deleteById_ProcessIdAndId_UserId(processId, request.memberId());
+        }
+        repository.save(process);
+    }
+
+    @NotNull
+    @Transactional
+    @CachePut(key = "#processId")
+    public DeploymentProcessResponse updateById(
+            @Min(0) @NotNull Long processId,
+            @NotNull @Valid DeploymentProcessUpdateRequest request
+    ) throws NoSuchElementException {
+        var process = findById(processId);
+        process.setStatus(request.status());
+
+        var savedProcess = repository.save(process);
+        return mapper.toResponse(savedProcess);
+    }
+
+    @CacheEvict(key = "#processId")
+    public void deleteById(
+            @Min(0) @NotNull Long processId
+    ) throws NoSuchElementException {
+        var process = findById(processId);
+        repository.delete(process);
+    }
+
+    @NotNull
+    public DeploymentProcess findById(@Min(0) @NotNull Long processId)
+            throws NoSuchElementException {
+        return repository.findById(processId)
+                .orElseThrow(() -> notFoundHandler(processId));
+    }
+
+    private NoSuchElementException notFoundHandler(Long processId) {
+        var message = messageSource.getMessage(
+                "deployment_process.not_found",
+                new Object[]{processId},
+                Locale.getDefault()
+        );
+        return new NoSuchElementException(message);
+    }
+
+    private DeploymentProcessHasUser memberIdToEntity(String memberId, DeploymentProcess process)
+            throws IllegalArgumentException {
+        var processId = process.getId();
+
+        var member = userRepository.findById(memberId).orElseGet(() -> {
+            var result = userService.validateUserId(memberId);
+            userService.foundOrElseThrow(memberId, result);
+            return User.builder().id(memberId).build();
+        });
+
+        var id = DeploymentProcessHasUserId.builder()
+                .processId(processId)
+                .userId(memberId)
+                .build();
+        return DeploymentProcessHasUser.builder()
+                .id(id)
+                .process(process)
+                .user(member)
+                .build();
+    }
+
+}
