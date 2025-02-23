@@ -41,7 +41,7 @@ public class CustomerService {
     private final CustomerMapper customerMapper;
     private final UserRepository userRepository;
 
-    public PagingWrapper<CustomerResponse> getAllByUserId(
+    public PagingWrapper<CustomerResponse> getAll(
             @Nullable String name,
             @Nullable String email,
             int pageNumber,

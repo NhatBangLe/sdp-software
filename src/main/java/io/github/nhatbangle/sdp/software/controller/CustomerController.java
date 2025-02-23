@@ -26,13 +26,13 @@ public class CustomerController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public PagingWrapper<CustomerResponse> getAllByUserId(
+    public PagingWrapper<CustomerResponse> getAll(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,
             @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
             @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
-        return service.getAllByUserId(
+        return service.getAll(
                 email,
                 name,
                 pageNumber,
