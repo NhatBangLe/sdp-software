@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.UUID;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * DTO for {@link io.github.nhatbangle.sdp.software.entity.software.SoftwareDocument}
@@ -15,7 +14,6 @@ import java.util.List;
 public record SoftwareDocumentCreateRequest(
         @Size(max = 150) @NotBlank String name,
         @Nullable @Size(max = 255) String description,
-        @UUID @NotNull String typeId,
-        @Nullable List<@UUID @NotNull String> attachmentIds
+        @UUID @NotNull String typeId
 ) implements Serializable {
 }

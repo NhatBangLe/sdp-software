@@ -26,7 +26,7 @@ public class SoftwareDocumentController {
 
     @GetMapping("/{softwareVersionId}/version")
     @ResponseStatus(HttpStatus.OK)
-    public PagingWrapper<SoftwareDocumentResponse> getAllDocumentsByVersionId(
+    public PagingWrapper<SoftwareDocumentResponse> getAllByVersionId(
             @PathVariable @UUID String softwareVersionId,
             @RequestParam(required = false) String documentTypeName,
             @RequestParam(required = false) String documentName,
@@ -44,7 +44,7 @@ public class SoftwareDocumentController {
 
     @GetMapping("/{documentId}")
     @ResponseStatus(HttpStatus.OK)
-    public SoftwareDocumentResponse getDocumentById(
+    public SoftwareDocumentResponse getById(
             @PathVariable @UUID String documentId
     ) {
         return service.getById(documentId);
@@ -52,7 +52,7 @@ public class SoftwareDocumentController {
 
     @PostMapping("/{softwareVersionId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public SoftwareDocumentResponse createDocument(
+    public SoftwareDocumentResponse create(
             @PathVariable @UUID String softwareVersionId,
             @RequestBody @Valid SoftwareDocumentCreateRequest request
     ) {
@@ -61,16 +61,25 @@ public class SoftwareDocumentController {
 
     @PutMapping("/{documentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateDocumentById(
+    public void updateById(
             @PathVariable @UUID String documentId,
             @RequestBody @Valid SoftwareDocumentUpdateRequest request
     ) {
         service.updateById(documentId, request);
     }
 
+    @PutMapping("/{documentId}/attachment")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateAttachment(
+            @PathVariable @UUID String documentId,
+            @RequestBody @Valid AttachmentUpdateRequest request
+    ) {
+        service.updateAttachmentById(documentId, request);
+    }
+
     @DeleteMapping("/{documentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteDocumentById(
+    public void deleteById(
             @PathVariable @UUID String documentId
     ) {
         service.deleteById(documentId);

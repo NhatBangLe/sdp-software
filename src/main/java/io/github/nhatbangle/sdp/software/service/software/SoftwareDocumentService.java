@@ -4,12 +4,15 @@ import io.github.nhatbangle.sdp.software.dto.*;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentResponse;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentUpdateRequest;
+import io.github.nhatbangle.sdp.software.entity.Attachment;
 import io.github.nhatbangle.sdp.software.entity.composite.SoftwareDocumentHasAttachmentId;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareDocument;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareDocumentHasAttachment;
 import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.mapper.software.SoftwareDocumentMapper;
+import io.github.nhatbangle.sdp.software.repository.SoftwareDocumentHasAttachmentRepository;
 import io.github.nhatbangle.sdp.software.repository.software.SoftwareDocumentRepository;
+import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.DocumentTypeService;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
@@ -29,7 +32,6 @@ import org.springframework.validation.annotation.Validated;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -42,6 +44,8 @@ public class SoftwareDocumentService {
     private final SoftwareDocumentMapper softwareDocumentMapper;
     private final SoftwareVersionService softwareVersionService;
     private final DocumentTypeService documentTypeService;
+    private final SoftwareDocumentHasAttachmentRepository docAtmRepository;
+    private final AttachmentService atmService;
 
     @NotNull
     public PagingWrapper<SoftwareDocumentResponse> getAllByVersionId(
@@ -88,21 +92,6 @@ public class SoftwareDocumentService {
                 .version(version)
                 .type(type)
                 .build());
-        var attachmentIds = request.attachmentIds();
-        if (attachmentIds != null && !attachmentIds.isEmpty()) {
-            var documentId = document.getId();
-            var attachments = attachmentIds.stream()
-                    .map(atmId -> SoftwareDocumentHasAttachment.builder()
-                            .id(SoftwareDocumentHasAttachmentId.builder()
-                                    .attachmentId(atmId)
-                                    .documentId(documentId)
-                                    .build())
-                            .build()
-                    ).collect(Collectors.toSet());
-            document.setAttachments(attachments);
-            document = softwareDocumentRepository.save(document);
-        }
-
         return softwareDocumentMapper.toResponse(document);
     }
 
@@ -114,24 +103,41 @@ public class SoftwareDocumentService {
             @NotNull @Valid SoftwareDocumentUpdateRequest request
     ) throws NoSuchElementException {
         var document = findById(documentId);
-
         document.setName(request.name());
         document.setDescription(request.description());
-        var attachmentIds = request.attachmentIds();
-        if (attachmentIds != null && !attachmentIds.isEmpty()) {
-            var attachments = attachmentIds.stream()
-                    .map(atmId -> SoftwareDocumentHasAttachment.builder()
-                            .id(SoftwareDocumentHasAttachmentId.builder()
-                                    .attachmentId(atmId)
-                                    .documentId(documentId)
-                                    .build())
-                            .build()
-                    ).collect(Collectors.toSet());
-            document.setAttachments(attachments);
-        }
 
         var savedDocument = softwareDocumentRepository.save(document);
         return softwareDocumentMapper.toResponse(savedDocument);
+    }
+
+    @Transactional
+    public void updateAttachmentById(
+            @UUID @NotNull String documentId,
+            @NotNull @Valid AttachmentUpdateRequest request
+    ) throws NoSuchElementException, IllegalArgumentException, ServiceUnavailableException {
+        var document = findById(documentId);
+        var attachmentId = request.attachmentId();
+        var result = atmService.isFileExist(attachmentId);
+        atmService.foundOrElseThrow(attachmentId, result);
+
+        var id = SoftwareDocumentHasAttachmentId.builder()
+                .attachmentId(request.attachmentId())
+                .documentId(documentId)
+                .build();
+        switch (request.operator()) {
+            case ADD -> {
+                if (docAtmRepository.existsById_DocumentIdAndId_AttachmentId(documentId, attachmentId)) {
+                    throw new IllegalArgumentException();
+                }
+                var attachment = SoftwareDocumentHasAttachment.builder()
+                        .id(id)
+                        .attachment(Attachment.builder().id(request.attachmentId()).build())
+                        .document(document)
+                        .build();
+                docAtmRepository.save(attachment);
+            }
+            case REMOVE -> docAtmRepository.deleteById(id);
+        }
     }
 
     @CacheEvict(key = "#documentId")
