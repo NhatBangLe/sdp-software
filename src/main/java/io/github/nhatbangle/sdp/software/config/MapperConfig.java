@@ -71,4 +71,9 @@ public class MapperConfig {
         return new DeploymentPhaseTypeMapper();
     }
 
+    @Bean
+    public MailTemplateMapper mailTemplateMapper() {
+        return new MailTemplateMapper();
+    }
+
 }

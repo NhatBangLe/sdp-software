@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.entity;
 
+import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -17,9 +18,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "expire_mail_template")
+@Table(name = "mail_template")
 @EntityListeners(AuditingEntityListener.class)
-public class ExpireMailTemplate {
+public class MailTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
@@ -30,6 +31,11 @@ public class ExpireMailTemplate {
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "content", nullable = false)
     private byte[] content;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 45)
+    private MailTemplateType type;
 
     @CreatedDate
     @ColumnDefault("CURRENT_TIMESTAMP")
