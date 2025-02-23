@@ -127,7 +127,12 @@ public class SoftwareDocumentService {
         switch (request.operator()) {
             case ADD -> {
                 if (docAtmRepository.existsById_DocumentIdAndId_AttachmentId(documentId, attachmentId)) {
-                    throw new IllegalArgumentException();
+                    var message = messageSource.getMessage(
+                            "software_document.attachment_already_exists",
+                            new Object[]{attachmentId, documentId},
+                            Locale.getDefault()
+                    );
+                    throw new IllegalArgumentException(message);
                 }
                 var attachment = SoftwareDocumentHasAttachment.builder()
                         .id(id)
