@@ -1,4 +1,4 @@
-package io.github.nhatbangle.sdp.software.repository;
+package io.github.nhatbangle.sdp.software.repository.software;
 
 import io.github.nhatbangle.sdp.software.entity.composite.SoftwareDocumentHasAttachmentId;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareDocumentHasAttachment;

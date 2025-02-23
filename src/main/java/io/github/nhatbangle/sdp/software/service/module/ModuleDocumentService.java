@@ -9,7 +9,7 @@ import io.github.nhatbangle.sdp.software.entity.module.ModuleDocument;
 import io.github.nhatbangle.sdp.software.entity.module.ModuleDocumentHasAttachment;
 import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.mapper.module.ModuleDocumentMapper;
-import io.github.nhatbangle.sdp.software.repository.ModuleDocumentHasAttachmentRepository;
+import io.github.nhatbangle.sdp.software.repository.module.ModuleDocumentHasAttachmentRepository;
 import io.github.nhatbangle.sdp.software.repository.module.ModuleDocumentRepository;
 import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.DocumentTypeService;
