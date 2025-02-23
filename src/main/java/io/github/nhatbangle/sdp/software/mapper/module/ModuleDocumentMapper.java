@@ -1,14 +1,14 @@
 package io.github.nhatbangle.sdp.software.mapper.module;
 
-import io.github.nhatbangle.sdp.software.dto.module.ModuleResponse;
-import io.github.nhatbangle.sdp.software.entity.module.Module;
-import io.github.nhatbangle.sdp.software.projection.module.ModuleInfo;
+import io.github.nhatbangle.sdp.software.dto.document.ModuleDocumentResponse;
+import io.github.nhatbangle.sdp.software.entity.module.ModuleDocument;
+import io.github.nhatbangle.sdp.software.projection.module.ModuleDocumentInfo;
 
 public class ModuleDocumentMapper {
 
-    public ModuleResponse toResponse(ModuleInfo entity) {
+    public ModuleDocumentResponse toResponse(ModuleDocumentInfo entity) {
         var updatedAt = entity.getUpdatedAt();
-        return new ModuleResponse(
+        return new ModuleDocumentResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
@@ -17,9 +17,9 @@ public class ModuleDocumentMapper {
         );
     }
 
-    public ModuleResponse toResponse(Module entity) {
+    public ModuleDocumentResponse toResponse(ModuleDocument entity) {
         var updatedAt = entity.getUpdatedAt();
-        return new ModuleResponse(
+        return new ModuleDocumentResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
