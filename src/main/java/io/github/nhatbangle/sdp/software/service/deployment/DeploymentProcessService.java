@@ -1,11 +1,15 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
+import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
+import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
+import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessResponse;
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessUpdateRequest;
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessMemberUpdateRequest;
+import io.github.nhatbangle.sdp.software.entity.MailTemplate;
 import io.github.nhatbangle.sdp.software.entity.User;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasUserId;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
@@ -16,6 +20,7 @@ import io.github.nhatbangle.sdp.software.repository.UserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessHasUserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessRepository;
 import io.github.nhatbangle.sdp.software.service.CustomerService;
+import io.github.nhatbangle.sdp.software.service.MailTemplateService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
 import jakarta.annotation.Nullable;
@@ -26,6 +31,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -33,9 +40,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -53,6 +62,11 @@ public class DeploymentProcessService {
     private final CustomerService customerService;
     private final DeploymentProcessHasUserRepository processHasUserRepository;
     private final UserRepository userRepository;
+    private final RabbitTemplate rabbitTemplate;
+    private final MailTemplateService mailTemplateService;
+
+    @Value("${app.mail-routing-key}")
+    private String mailRoutingKey;
 
     @NotNull
     public PagingWrapper<DeploymentProcessResponse> getAll(
@@ -118,6 +132,30 @@ public class DeploymentProcessService {
         return mapper.toResponse(process);
     }
 
+    @Async
+    @Transactional
+    protected void sendMail(
+            @NotNull MailTemplate template,
+            @NotNull DeploymentProcess process
+    ) throws NoSuchElementException {
+        var customer = process.getCustomer();
+        var softwareVersion = process.getSoftwareVersion();
+        var software = softwareVersion.getSoftware();
+        var content = new String(template.getContent(), StandardCharsets.UTF_8)
+                .replace(MailTemplatePlaceholder.CUSTOMER_NAME.name(), customer.getName())
+                .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.name(), process.getId().toString())
+                .replace(MailTemplatePlaceholder.SOFTWARE_NAME.name(), software.getName())
+                .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.name(), softwareVersion.getName());
+
+        var charset = StandardCharsets.UTF_8;
+        var payload = new MailSendPayload(
+                content.getBytes(charset),
+                charset.name(),
+                customer.getEmail()
+        );
+        rabbitTemplate.convertAndSend(mailRoutingKey, payload);
+    }
+
     @Transactional
     @CacheEvict(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
     public void updateMember(
@@ -144,7 +182,19 @@ public class DeploymentProcessService {
             @NotNull @Valid DeploymentProcessUpdateRequest request
     ) throws NoSuchElementException {
         var process = findById(processId);
-        process.setStatus(request.status());
+        var status = request.status();
+        process.setStatus(status);
+        if (status == DeploymentProcessStatus.DONE) {
+            var creator = process.getCreator();
+            try {
+                var mailTemplate = mailTemplateService
+                        .findByUserIdAndType(creator.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
+                sendMail(mailTemplate, process);
+            } catch (NoSuchElementException e) {
+                log.warn("Could not find mail template for process with id {}", processId);
+                log.debug(e.getMessage(), e);
+            }
+        }
 
         var savedProcess = repository.save(process);
         return mapper.toResponse(savedProcess);

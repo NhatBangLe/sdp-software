@@ -25,3 +25,6 @@ springdoc:
   swagger-ui:
     path: /docs
   override-with-generic-response: false
+
+app:
+  mail-routing-key: ${MAIL_ROUTING_KEY}
