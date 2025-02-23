@@ -532,15 +532,16 @@ CREATE INDEX `fk_UPDATE_PHASE_HISTORY_USER1_idx` ON `software_db`.update_phase_h
 -- -----------------------------------------------------
 -- Table `software_db`.`EXPIRE_MAIL_TEMPLATE`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `software_db`.expire_mail_template
+CREATE TABLE IF NOT EXISTS `software_db`.mail_template
 (
     `id`         VARCHAR(36) NOT NULL,
     `content`    BLOB        NOT NULL,
     `created_at` DATETIME    NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME    NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `type`       VARCHAR(45) NOT NULL,
     `USER_id`    VARCHAR(36) NOT NULL,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_EXPIRE_MAIL_TEMPLATE_USER1`
+    CONSTRAINT fk_MAIL_TEMPLATE_USER1
         FOREIGN KEY (`USER_id`)
             REFERENCES `software_db`.`user` (`id`)
             ON DELETE NO ACTION
@@ -548,7 +549,7 @@ CREATE TABLE IF NOT EXISTS `software_db`.expire_mail_template
 )
     ENGINE = InnoDB;
 
-CREATE INDEX `fk_EXPIRE_MAIL_TEMPLATE_USER1_idx` ON `software_db`.expire_mail_template (`USER_id` ASC) VISIBLE;
+CREATE INDEX fk_MAIL_TEMPLATE_USER1_idx ON `software_db`.mail_template (`USER_id` ASC) VISIBLE;
 
 
 SET SQL_MODE = @OLD_SQL_MODE;
