@@ -1,4 +1,4 @@
-package io.github.nhatbangle.sdp.software.repository;
+package io.github.nhatbangle.sdp.software.repository.license;
 
 import io.github.nhatbangle.sdp.software.entity.SoftwareLicense;
 import io.github.nhatbangle.sdp.software.projection.SoftwareLicenseInfo;
@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,12 +24,14 @@ public interface SoftwareLicenseRepository extends JpaRepository<SoftwareLicense
     Optional<SoftwareLicenseInfo> findInfoById(@UUID @NotNull String id);
 
     @Query("""
-            select lc from SoftwareLicense lc
-            where lc.startTime + lc.expireAlertInterval = lc.endTime
-                and lc.isExpireAlertDone = :isAlertDone
+            select s from SoftwareLicense s
+            where s.isExpireAlertDone = :isAlertDone
+                and s.startTime <= current_time
+                and current_time <= s.endTime
             """)
-    Stream<SoftwareLicense> findAllAlmostExpiredLicense(
-            @Param("isAlertDone") boolean isExpireAlertDone
+    Stream<SoftwareLicense> findAllPotentiallyExpiredLicenses(
+            @Param("isAlertDone") boolean isExpireAlertDone,
+            @NotNull Sort sort
     );
 
 }

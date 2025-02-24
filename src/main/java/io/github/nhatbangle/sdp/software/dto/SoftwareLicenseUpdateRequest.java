@@ -12,6 +12,6 @@ import java.io.Serializable;
  */
 public record SoftwareLicenseUpdateRequest(
         @Nullable @Size(max = 255) String description,
-        @Min(0) @NotNull Long expireAlertIntervalMs
+        @Min(0) @NotNull Integer expireAlertIntervalDay
 ) implements Serializable {
 }

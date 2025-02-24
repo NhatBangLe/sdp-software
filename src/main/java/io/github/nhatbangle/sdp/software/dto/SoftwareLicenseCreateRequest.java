@@ -15,6 +15,6 @@ public record SoftwareLicenseCreateRequest(
         @Nullable @Size(max = 255) String description,
         @Min(0) @NotNull Long startTimeMs,
         @Min(0) @NotNull Long endTimeMs,
-        @Min(0) @NotNull Long expireAlertIntervalMs
+        @Min(0) @NotNull Integer expireAlertIntervalDay
 ) implements Serializable {
 }

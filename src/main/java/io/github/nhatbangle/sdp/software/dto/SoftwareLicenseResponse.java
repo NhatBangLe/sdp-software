@@ -12,7 +12,7 @@ public record SoftwareLicenseResponse(
         @Nullable String description,
         long startTimeMs,
         long endTimeMs,
-        long expireAlertIntervalMs,
+        int expireAlertIntervalDay,
         long createdAtMs,
         @Nullable Long updatedAtMs
 ) implements Serializable {

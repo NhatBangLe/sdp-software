@@ -14,7 +14,7 @@ public interface SoftwareLicenseInfo {
 
     Instant getEndTime();
 
-    Instant getExpireAlertInterval();
+    Integer getExpireAlertIntervalDay();
 
     Instant getCreatedAt();
 

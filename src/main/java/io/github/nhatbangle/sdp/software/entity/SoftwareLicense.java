@@ -41,13 +41,15 @@ public class SoftwareLicense {
     private Instant endTime;
 
     @NotNull
+    @Builder.Default
+    @ColumnDefault("'15'")
+    @Column(name = "expire_alert_interval_day", columnDefinition = "smallint UNSIGNED not null")
+    private Integer expireAlertIntervalDay = 15;
+
+    @NotNull
     @ColumnDefault("b'0'")
     @Column(name = "is_expire_alert_done", nullable = false)
     private Boolean isExpireAlertDone = false;
-
-    @NotNull
-    @Column(name = "expire_alert_interval", nullable = false)
-    private Instant expireAlertInterval;
 
     @CreatedDate
     @ColumnDefault("CURRENT_TIMESTAMP")

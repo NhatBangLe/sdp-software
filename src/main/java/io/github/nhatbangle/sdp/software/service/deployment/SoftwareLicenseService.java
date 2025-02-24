@@ -9,7 +9,7 @@ import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseUpdateRequest;
 import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
 import io.github.nhatbangle.sdp.software.entity.SoftwareLicense;
 import io.github.nhatbangle.sdp.software.mapper.deployment.SoftwareLicenseMapper;
-import io.github.nhatbangle.sdp.software.repository.SoftwareLicenseRepository;
+import io.github.nhatbangle.sdp.software.repository.license.SoftwareLicenseRepository;
 import io.github.nhatbangle.sdp.software.service.MailTemplateService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import jakarta.validation.Valid;
@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.UUID;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
@@ -34,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
@@ -91,7 +93,7 @@ public class SoftwareLicenseService {
                 .description(request.description())
                 .startTime(Instant.ofEpochMilli(request.startTimeMs()))
                 .endTime(Instant.ofEpochMilli(request.endTimeMs()))
-                .expireAlertInterval(Instant.ofEpochMilli(request.expireAlertIntervalMs()))
+                .expireAlertIntervalDay(request.expireAlertIntervalDay())
                 .process(process)
                 .creator(user)
                 .build());
@@ -107,7 +109,7 @@ public class SoftwareLicenseService {
     ) throws NoSuchElementException, IllegalArgumentException {
         var license = findById(licenseId);
         license.setDescription(request.description());
-        license.setExpireAlertInterval(Instant.ofEpochMilli(request.expireAlertIntervalMs()));
+        license.setExpireAlertIntervalDay(request.expireAlertIntervalDay());
 
         var savedLicense = repository.save(license);
         return mapper.toResponse(savedLicense);
@@ -130,14 +132,23 @@ public class SoftwareLicenseService {
 
     @NotNull
     public Stream<SoftwareLicense> findAllAlmostExpiredLicense() {
-        return repository.findAllAlmostExpiredLicense(false);
+        return repository.findAllPotentiallyExpiredLicenses(
+                false,
+                Sort.by("startTime").ascending()
+        ).filter(license -> {
+            var interval = license.getExpireAlertIntervalDay();
+            var current = Instant.now();
+            var endTime = license.getEndTime();
+
+            return current.plus(interval, ChronoUnit.DAYS).compareTo(endTime) >= 0;
+        });
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void sendExpirationAlertMail(
             @NotNull Stream<SoftwareLicense> licenseStream
     ) throws NoSuchElementException {
-        licenseStream.forEach(license -> {
+        var filtered = licenseStream.filter(license -> {
             var charset = StandardCharsets.UTF_8;
             var process = license.getProcess();
             var creatorId = process.getCreator().getId();
@@ -161,14 +172,28 @@ public class SoftwareLicenseService {
                         customer.getEmail()
                 );
                 rabbitTemplate.convertAndSend(mailBoxQueue, payload);
+
+                license.setIsExpireAlertDone(true);
+                return true;
             } catch (NoSuchElementException e) {
                 log.warn("""
                         Could not send expiration alert mail.
                         Because user with id {} doesn't have expiration template.
                         """, creatorId);
                 log.debug(e.getMessage(), e);
+
+                return false;
+            } catch (AmqpException e) {
+                log.warn("""
+                        Could not send expiration alert mail.
+                        Because the AMQP exception has been thrown.
+                        """);
+                log.error(e.getMessage(), e);
+
+                return false;
             }
         });
+        repository.saveAll(filtered.toList());
     }
 
     private NoSuchElementException notFoundHandler(String phaseId) {

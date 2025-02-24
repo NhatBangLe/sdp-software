@@ -13,7 +13,7 @@ public class SoftwareLicenseMapper {
                 entity.getDescription(),
                 entity.getStartTime().toEpochMilli(),
                 entity.getEndTime().toEpochMilli(),
-                entity.getExpireAlertInterval().toEpochMilli(),
+                entity.getExpireAlertIntervalDay(),
                 entity.getCreatedAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null
         );
@@ -26,7 +26,7 @@ public class SoftwareLicenseMapper {
                 entity.getDescription(),
                 entity.getStartTime().toEpochMilli(),
                 entity.getEndTime().toEpochMilli(),
-                entity.getExpireAlertInterval().toEpochMilli(),
+                entity.getExpireAlertIntervalDay(),
                 entity.getCreatedAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null
         );

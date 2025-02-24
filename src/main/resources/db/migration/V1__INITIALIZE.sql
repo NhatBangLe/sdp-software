@@ -556,16 +556,16 @@ CREATE INDEX fk_MAIL_TEMPLATE_USER1_idx ON `software_db`.mail_template (`USER_id
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `software_db`.software_license
 (
-    `id`                    VARCHAR(36)                          NOT NULL,
-    `description`           VARCHAR(255) CHARACTER SET 'utf8mb4' NULL,
-    `start_time`            DATETIME                             NOT NULL,
-    `end_time`              DATETIME                             NOT NULL,
-    `is_expire_alert_done`  BIT(1)                               NOT NULL DEFAULT b'0',
-    `expire_alert_interval` DATETIME                             NOT NULL,
-    `created_at`            DATETIME                             NULL     DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`            DATETIME                             NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    `DEPLOYMENT_PROCESS_id` INT UNSIGNED                         NOT NULL,
-    `USER_CREATOR_id`       VARCHAR(36)                          NOT NULL,
+    `id`                        VARCHAR(36)                          NOT NULL,
+    `description`               VARCHAR(255) CHARACTER SET 'utf8mb4' NULL,
+    `start_time`                DATETIME                             NOT NULL,
+    `end_time`                  DATETIME                             NOT NULL,
+    `is_expire_alert_done`      BIT(1)                               NOT NULL DEFAULT b'0',
+    `expire_alert_interval_day` SMALLINT UNSIGNED                    NOT NULL DEFAULT 15,
+    `created_at`                DATETIME                             NULL     DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`                DATETIME                             NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `DEPLOYMENT_PROCESS_id`     INT UNSIGNED                         NOT NULL,
+    `USER_CREATOR_id`           VARCHAR(36)                          NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_SOFTWARE_LICENSE_DEPLOYMENT_PROCESS1`
         FOREIGN KEY (`DEPLOYMENT_PROCESS_id`)
