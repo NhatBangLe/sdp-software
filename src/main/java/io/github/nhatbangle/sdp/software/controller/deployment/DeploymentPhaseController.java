@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.controller.deployment;
 
+import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.service.deployment.DeploymentPhaseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -62,6 +63,15 @@ public class DeploymentPhaseController {
             @RequestBody @Valid DeploymentPhaseUpdateRequest request
     ) {
         service.updateById(phaseId, request);
+    }
+
+    @PutMapping("/{phaseId}/attachment")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateAttachment(
+            @PathVariable @UUID String phaseId,
+            @RequestBody @Valid AttachmentUpdateRequest request
+    ) {
+        service.updateAttachment(phaseId, request);
     }
 
     @PutMapping("/{phaseId}/member")

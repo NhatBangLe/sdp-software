@@ -1,16 +1,22 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
+import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
+import io.github.nhatbangle.sdp.software.entity.Attachment;
+import io.github.nhatbangle.sdp.software.entity.composite.DeploymentPhaseHasAttachmentId;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentPhaseHasUserId;
 import io.github.nhatbangle.sdp.software.entity.composite.UpdatePhaseHistoryId;
 import io.github.nhatbangle.sdp.software.entity.deployment.*;
+import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentPhaseMapper;
+import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentPhaseHasAttachmentRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentPhaseRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessHasUserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentPhaseHasUserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.UpdatePhaseHistoryRepository;
+import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.UserService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -38,6 +44,7 @@ import java.util.NoSuchElementException;
 @CacheConfig(cacheNames = "sdp_software-deployment_phase")
 public class DeploymentPhaseService {
 
+    private final DeploymentPhaseHasAttachmentRepository phaseAtmRepository;
     private final MessageSource messageSource;
     private final DeploymentPhaseRepository repository;
     private final DeploymentPhaseMapper mapper;
@@ -47,6 +54,7 @@ public class DeploymentPhaseService {
     private final UpdatePhaseHistoryRepository updatePhaseHistoryRepository;
     private final DeploymentPhaseHasUserRepository deploymentPhaseHasUserRepository;
     private final DeploymentProcessHasUserRepository processHasUserRepository;
+    private final AttachmentService atmService;
 
     @NotNull
     public List<DeploymentPhaseResponse> getAllByProcessId(
@@ -119,6 +127,41 @@ public class DeploymentPhaseService {
 
         var savedPhase = repository.save(phase);
         return mapper.toResponse(savedPhase);
+    }
+
+    @Transactional
+    public void updateAttachment(
+            @UUID @NotNull String phaseId,
+            @NotNull @Valid AttachmentUpdateRequest request
+    ) throws NoSuchElementException, IllegalArgumentException, ServiceUnavailableException {
+        var phase = findById(phaseId);
+        var attachmentId = request.attachmentId();
+        var result = atmService.isFileExist(attachmentId);
+        atmService.foundOrElseThrow(attachmentId, result);
+
+        var id = DeploymentPhaseHasAttachmentId.builder()
+                .attachmentId(request.attachmentId())
+                .deploymentPhaseId(phaseId)
+                .build();
+        switch (request.operator()) {
+            case ADD -> {
+                if (phaseAtmRepository.existsById_DeploymentPhaseIdAndId_AttachmentId(phaseId, attachmentId)) {
+                    var message = messageSource.getMessage(
+                            "deployment_phase.attachment_already_exists",
+                            new Object[]{attachmentId, phaseId},
+                            Locale.getDefault()
+                    );
+                    throw new IllegalArgumentException(message);
+                }
+                var attachment = DeploymentPhaseHasAttachment.builder()
+                        .id(id)
+                        .attachment(Attachment.builder().id(request.attachmentId()).build())
+                        .deploymentPhase(phase)
+                        .build();
+                phaseAtmRepository.save(attachment);
+            }
+            case REMOVE -> phaseAtmRepository.deleteById(id);
+        }
     }
 
     @Transactional

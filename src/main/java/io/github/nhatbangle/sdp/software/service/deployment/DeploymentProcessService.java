@@ -24,7 +24,7 @@ import io.github.nhatbangle.sdp.software.service.MailTemplateService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -65,8 +65,8 @@ public class DeploymentProcessService {
     private final RabbitTemplate rabbitTemplate;
     private final MailTemplateService mailTemplateService;
 
-    @Value("${app.mail-routing-key}")
-    private String mailRoutingKey;
+    @Value("${app.mail-box-queue}")
+    private String mailBoxQueue;
 
     @NotNull
     public PagingWrapper<DeploymentProcessResponse> getAll(
@@ -133,8 +133,8 @@ public class DeploymentProcessService {
     }
 
     @Async
-    @Transactional
-    protected void sendMail(
+    @Transactional(readOnly = true)
+    protected void sendProcessDoneAlertMail(
             @NotNull MailTemplate template,
             @NotNull DeploymentProcess process
     ) throws NoSuchElementException {
@@ -153,7 +153,7 @@ public class DeploymentProcessService {
                 charset.name(),
                 customer.getEmail()
         );
-        rabbitTemplate.convertAndSend(mailRoutingKey, payload);
+        rabbitTemplate.convertAndSend(mailBoxQueue, payload);
     }
 
     @Transactional
@@ -189,7 +189,7 @@ public class DeploymentProcessService {
             try {
                 var mailTemplate = mailTemplateService
                         .findByUserIdAndType(creator.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
-                sendMail(mailTemplate, process);
+                sendProcessDoneAlertMail(mailTemplate, process);
             } catch (NoSuchElementException e) {
                 log.warn("Could not find mail template for process with id {}", processId);
                 log.debug(e.getMessage(), e);
