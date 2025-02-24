@@ -11,7 +11,7 @@ import io.github.nhatbangle.sdp.software.mapper.DocumentTypeMapper;
 import io.github.nhatbangle.sdp.software.repository.DocumentTypeRepository;
 import io.github.nhatbangle.sdp.software.repository.UserRepository;
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +66,7 @@ public class DocumentTypeService {
         return mapper.toResponse(type);
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, ServiceUnavailableException.class})
+    @Transactional
     @CachePut(key = "#result.id()")
     public DocumentTypeResponse create(
             @UUID @NotNull String userId,

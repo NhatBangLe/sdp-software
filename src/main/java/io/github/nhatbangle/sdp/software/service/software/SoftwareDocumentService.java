@@ -15,7 +15,7 @@ import io.github.nhatbangle.sdp.software.repository.software.SoftwareDocumentRep
 import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.DocumentTypeService;
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;

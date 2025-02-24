@@ -9,7 +9,7 @@ import io.github.nhatbangle.sdp.software.mapper.module.ModuleMapper;
 import io.github.nhatbangle.sdp.software.repository.module.ModuleRepository;
 import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;

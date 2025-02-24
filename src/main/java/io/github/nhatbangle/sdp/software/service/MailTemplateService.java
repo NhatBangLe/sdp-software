@@ -10,7 +10,7 @@ import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.mapper.MailTemplateMapper;
 import io.github.nhatbangle.sdp.software.repository.MailTemplateRepository;
 import io.github.nhatbangle.sdp.software.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;

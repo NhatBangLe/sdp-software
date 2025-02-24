@@ -8,7 +8,7 @@ import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
 import io.github.nhatbangle.sdp.software.mapper.software.SoftwareVersionMapper;
 import io.github.nhatbangle.sdp.software.repository.software.SoftwareVersionRepository;
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
