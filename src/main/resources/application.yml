@@ -27,4 +27,4 @@ springdoc:
   override-with-generic-response: false
 
 app:
-  mail-routing-key: ${MAIL_ROUTING_KEY}
+  mail-box-queue: ${MAIL_BOX_QUEUE}
