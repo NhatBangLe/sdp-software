@@ -4,6 +4,7 @@ import io.github.nhatbangle.sdp.software.mapper.*;
 import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentPhaseMapper;
 import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentPhaseTypeMapper;
 import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentProcessMapper;
+import io.github.nhatbangle.sdp.software.mapper.deployment.SoftwareLicenseMapper;
 import io.github.nhatbangle.sdp.software.mapper.module.ModuleDocumentMapper;
 import io.github.nhatbangle.sdp.software.mapper.module.ModuleMapper;
 import io.github.nhatbangle.sdp.software.mapper.module.ModuleVersionMapper;
@@ -74,6 +75,11 @@ public class MapperConfig {
     @Bean
     public MailTemplateMapper mailTemplateMapper() {
         return new MailTemplateMapper();
+    }
+
+    @Bean
+    public SoftwareLicenseMapper softwareLicenseMapper() {
+        return new SoftwareLicenseMapper();
     }
 
 }
