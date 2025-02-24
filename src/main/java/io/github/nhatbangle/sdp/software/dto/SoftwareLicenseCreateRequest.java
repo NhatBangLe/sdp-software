@@ -4,7 +4,6 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.hibernate.validator.constraints.UUID;
 
 import java.io.Serializable;
 
