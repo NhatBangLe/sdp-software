@@ -50,7 +50,7 @@ public class ModuleDocumentService {
 
     @NotNull
     public PagingWrapper<ModuleDocumentResponse> getAllByVersionId(
-            @UUID @NotNull String softwareVersionId,
+            @UUID @NotNull String moduleVersionId,
             @Nullable String documentTypeName,
             @Nullable String documentName,
             int pageNumber,
@@ -58,7 +58,7 @@ public class ModuleDocumentService {
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize);
         var page = repository.findAllByVersion_IdAndType_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
-                softwareVersionId,
+                moduleVersionId,
                 Objects.requireNonNullElse(documentTypeName, ""),
                 Objects.requireNonNullElse(documentName, ""),
                 pageable

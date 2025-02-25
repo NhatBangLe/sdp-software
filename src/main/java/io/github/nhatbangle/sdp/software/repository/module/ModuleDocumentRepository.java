@@ -14,10 +14,10 @@ import java.util.Optional;
 @Validated
 public interface ModuleDocumentRepository extends JpaRepository<ModuleDocument, String> {
 
-    Page<ModuleDocument> findAllByVersion_IdAndType_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
-            @NotNull @UUID String moduleVersionId,
-            @NotNull String documentName,
+    Page<ModuleDocumentInfo> findAllByVersion_IdAndType_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
+            @UUID @NotNull String moduleVersionId,
             @NotNull String documentTypeName,
+            @NotNull String documentName,
             @NotNull Pageable pageable
     );
 
