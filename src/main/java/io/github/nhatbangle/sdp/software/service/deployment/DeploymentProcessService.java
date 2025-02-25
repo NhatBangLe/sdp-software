@@ -11,17 +11,20 @@ import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessUpdateR
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessMemberUpdateRequest;
 import io.github.nhatbangle.sdp.software.entity.MailTemplate;
 import io.github.nhatbangle.sdp.software.entity.User;
+import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasModuleVersionId;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasUserId;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcessHasModuleVersion;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcessHasUser;
-import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.mapper.deployment.DeploymentProcessMapper;
+import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessHasModuleVersionRepository;
 import io.github.nhatbangle.sdp.software.repository.UserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessHasUserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessRepository;
 import io.github.nhatbangle.sdp.software.service.CustomerService;
 import io.github.nhatbangle.sdp.software.service.MailTemplateService;
 import io.github.nhatbangle.sdp.software.service.UserService;
+import io.github.nhatbangle.sdp.software.service.module.ModuleVersionService;
 import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
 import jakarta.annotation.Nullable;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,9 +64,11 @@ public class DeploymentProcessService {
     private final SoftwareVersionService softwareVersionService;
     private final CustomerService customerService;
     private final DeploymentProcessHasUserRepository processHasUserRepository;
+    private final DeploymentProcessHasModuleVersionRepository processHasModuleVersionsRepository;
     private final UserRepository userRepository;
     private final RabbitTemplate rabbitTemplate;
     private final MailTemplateService mailTemplateService;
+    private final ModuleVersionService moduleVersionService;
 
     @Value("${app.mail-box-queue}")
     private String mailBoxQueue;
@@ -100,12 +105,22 @@ public class DeploymentProcessService {
 
     @NotNull
     @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
+    public List<String> getAllModuleVersions(
+            @Min(0) @NotNull Long processId
+    ) throws NoSuchElementException {
+        var members = processHasModuleVersionsRepository
+                .findAllById_ProcessId(processId, Sort.by("createdAt").ascending());
+        return members.map(member -> member.getId().getVersionId()).toList();
+    }
+
+    @NotNull
+    @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
     public List<String> getAllMembers(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
         var members = processHasUserRepository
                 .findAllById_ProcessId(processId, Sort.by("createdAt").ascending());
-        return members.stream().map(member -> member.getId().getUserId()).toList();
+        return members.map(member -> member.getId().getUserId()).toList();
     }
 
     @NotNull
@@ -114,20 +129,30 @@ public class DeploymentProcessService {
     public DeploymentProcessResponse create(
             @UUID @NotNull String userId,
             @NotNull @Valid DeploymentProcessCreateRequest request
-    ) throws IllegalArgumentException, ServiceUnavailableException {
+    ) throws NoSuchElementException {
         var user = userService.getById(userId);
         var version = softwareVersionService.findById(request.softwareVersionId());
         var customer = customerService.findById(request.customerId());
+        var moduleVersions = request.moduleVersionIds().stream().map(moduleVersionService::findById);
+
         var process = repository.save(DeploymentProcess.builder()
                 .softwareVersion(version)
                 .customer(customer)
                 .creator(user)
                 .build());
 
-        var members = request.memberIds().stream()
-                .map(memberId -> memberIdToEntity(memberId, process))
-                .toList();
-        processHasUserRepository.saveAll(members);
+        var processId = process.getId();
+        processHasModuleVersionsRepository.saveAll(moduleVersions.map(moduleVersion -> {
+            var id = DeploymentProcessHasModuleVersionId.builder()
+                    .processId(processId)
+                    .versionId(moduleVersion.getId())
+                    .build();
+            return DeploymentProcessHasModuleVersion.builder()
+                    .id(id)
+                    .process(process)
+                    .version(moduleVersion)
+                    .build();
+        }).toList());
 
         return mapper.toResponse(process);
     }
@@ -137,17 +162,17 @@ public class DeploymentProcessService {
     protected void sendProcessDoneAlertMail(
             @NotNull MailTemplate template,
             @NotNull DeploymentProcess process
-    ) throws NoSuchElementException {
+    ) {
+        var charset = StandardCharsets.UTF_8;
         var customer = process.getCustomer();
         var softwareVersion = process.getSoftwareVersion();
         var software = softwareVersion.getSoftware();
-        var content = new String(template.getContent(), StandardCharsets.UTF_8)
+        var content = new String(template.getContent(), charset)
                 .replace(MailTemplatePlaceholder.CUSTOMER_NAME.name(), customer.getName())
                 .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.name(), process.getId().toString())
                 .replace(MailTemplatePlaceholder.SOFTWARE_NAME.name(), software.getName())
                 .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.name(), softwareVersion.getName());
 
-        var charset = StandardCharsets.UTF_8;
         var payload = new MailSendPayload(
                 content.getBytes(charset),
                 charset.name(),

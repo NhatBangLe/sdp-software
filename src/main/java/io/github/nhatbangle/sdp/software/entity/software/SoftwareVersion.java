@@ -1,5 +1,7 @@
 package io.github.nhatbangle.sdp.software.entity.software;
 
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
+import io.github.nhatbangle.sdp.software.entity.module.Module;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -51,4 +54,16 @@ public class SoftwareVersion {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "SOFTWARE_id", nullable = false)
     private Software software;
+
+    @Nullable
+    @OneToMany(mappedBy = "softwareVersion")
+    private Set<DeploymentProcess> deploymentProcesses;
+
+    @Nullable
+    @OneToMany(mappedBy = "softwareVersion")
+    private Set<Module> modules;
+
+    @Nullable
+    @OneToMany(mappedBy = "version")
+    private Set<SoftwareDocument> documents;
 }

@@ -24,7 +24,7 @@ public class DeploymentPhaseHasAttachmentId implements Serializable {
     @UUID
     @NotNull
     @Column(name = "DEPLOYMENT_PHASE_id", nullable = false, length = 36)
-    private String deploymentPhaseId;
+    private String phaseId;
 
     @UUID
     @NotNull
@@ -37,12 +37,11 @@ public class DeploymentPhaseHasAttachmentId implements Serializable {
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         DeploymentPhaseHasAttachmentId entity = (DeploymentPhaseHasAttachmentId) o;
         return Objects.equals(this.attachmentId, entity.attachmentId) &&
-               Objects.equals(this.deploymentPhaseId, entity.deploymentPhaseId);
+               Objects.equals(this.phaseId, entity.phaseId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(attachmentId, deploymentPhaseId);
+        return Objects.hash(attachmentId, phaseId);
     }
-
 }

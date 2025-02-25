@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -56,4 +57,8 @@ public class DeploymentPhaseType {
     )
     @JoinColumn(name = "USER_id", nullable = false)
     private User user;
+
+    @Nullable
+    @OneToMany(mappedBy = "type", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentPhase> phases;
 }

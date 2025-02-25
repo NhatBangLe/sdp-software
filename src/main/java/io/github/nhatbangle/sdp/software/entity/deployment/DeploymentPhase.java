@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -85,4 +86,16 @@ public class DeploymentPhase {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "USER_last_update_id")
     private User userLastUpdate;
+
+    @Nullable
+    @OneToMany(mappedBy = "phase", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentPhaseHasAttachment> attachments;
+
+    @Nullable
+    @OneToMany(mappedBy = "phase", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentPhaseHasUser> users;
+
+    @Nullable
+    @OneToMany(mappedBy = "phase", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<UpdatePhaseHistory> histories;
 }

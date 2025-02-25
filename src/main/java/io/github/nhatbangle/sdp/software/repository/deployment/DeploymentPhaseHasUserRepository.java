@@ -8,13 +8,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 @Validated
 public interface DeploymentPhaseHasUserRepository extends JpaRepository<DeploymentPhaseHasUser, DeploymentPhaseHasUserId> {
 
     void deleteById_PhaseIdAndId_UserId(@NotNull @UUID String phaseId, @NotNull @UUID String userId);
 
-    List<DeploymentPhaseHasUser> findAllById_PhaseId(@NotNull @UUID String phaseId, @NotNull Sort sort);
+    Stream<DeploymentPhaseHasUser> findAllById_PhaseId(@NotNull @UUID String phaseId, @NotNull Sort sort);
 
 }

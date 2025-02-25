@@ -12,6 +12,6 @@ import java.util.List;
 public record DeploymentProcessCreateRequest(
         @UUID @NotNull String softwareVersionId,
         @UUID @NotNull String customerId,
-        @NotNull List<@NotNull @UUID String> memberIds
+        @NotNull List<@NotNull @UUID String> moduleVersionIds
 ) implements Serializable {
 }

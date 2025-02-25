@@ -9,13 +9,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Validated
 public interface DeploymentProcessHasUserRepository extends JpaRepository<DeploymentProcessHasUser, DeploymentProcessHasUserId> {
 
-    List<DeploymentProcessHasUser> findAllById_ProcessId(@Min(0) @NotNull Long processId, @NotNull Sort sort);
+    Stream<DeploymentProcessHasUser> findAllById_ProcessId(@Min(0) @NotNull Long processId, @NotNull Sort sort);
 
     void deleteById_ProcessIdAndId_UserId(@Min(0) @NotNull Long processId, @NotNull @UUID String userId);
 

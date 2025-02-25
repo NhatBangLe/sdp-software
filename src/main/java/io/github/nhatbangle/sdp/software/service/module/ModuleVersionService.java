@@ -106,10 +106,10 @@ public class ModuleVersionService {
     }
 
     @NotNull
-    public ModuleVersion findById(@UUID @NotNull String moduleId)
+    public ModuleVersion findById(@UUID @NotNull String versionId)
             throws NoSuchElementException {
-        return moduleVersionRepository.findById(moduleId)
-                .orElseThrow(() -> notFoundHandler(moduleId));
+        return moduleVersionRepository.findById(versionId)
+                .orElseThrow(() -> notFoundHandler(versionId));
     }
 
     private NoSuchElementException notFoundHandler(String versionId) {

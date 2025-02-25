@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -57,4 +58,8 @@ public class ModuleDocument {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "VERSION_id", nullable = false)
     private ModuleVersion version;
+
+    @Nullable
+    @OneToMany(mappedBy = "document", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<ModuleDocumentHasAttachment> attachments;
 }

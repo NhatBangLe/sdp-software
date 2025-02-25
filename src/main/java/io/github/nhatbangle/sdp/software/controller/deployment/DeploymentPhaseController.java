@@ -39,7 +39,15 @@ public class DeploymentPhaseController {
         return service.getById(phaseId);
     }
 
-    @GetMapping("/{phaseId}/members")
+    @GetMapping("/{phaseId}/attachment")
+    @ResponseStatus(HttpStatus.OK)
+    public List<String> getAllAttachments(
+            @PathVariable @UUID String phaseId
+    ) {
+        return service.getAllAttachments(phaseId);
+    }
+
+    @GetMapping("/{phaseId}/member")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllMembers(
             @PathVariable @UUID String phaseId

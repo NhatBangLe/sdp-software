@@ -54,7 +54,15 @@ public class DeploymentProcessController {
         return service.getById(processId);
     }
 
-    @GetMapping("/{processId}/members")
+    @GetMapping("/{processId}/module-version")
+    @ResponseStatus(HttpStatus.OK)
+    public List<String> getAllModuleVersions(
+            @PathVariable @Min(0) Long processId
+    ) {
+        return service.getAllModuleVersions(processId);
+    }
+
+    @GetMapping("/{processId}/member")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllMembers(
             @PathVariable @Min(0) Long processId

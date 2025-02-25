@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -52,4 +53,8 @@ public class Module {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "SOFTWARE_VERSION_id", nullable = false)
     private SoftwareVersion softwareVersion;
+
+    @Nullable
+    @OneToMany(mappedBy = "module", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<ModuleVersion> versions;
 }

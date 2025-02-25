@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.entity.module;
 
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcessHasModuleVersion;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -51,4 +53,12 @@ public class ModuleVersion {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "MODULE_id", nullable = false)
     private Module module;
+
+    @Nullable
+    @OneToMany(mappedBy = "version", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentProcessHasModuleVersion> usedByProcesses;
+
+    @Nullable
+    @OneToMany(mappedBy = "version", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<ModuleDocument> documents;
 }

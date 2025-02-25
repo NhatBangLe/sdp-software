@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.entity;
 
+import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -61,4 +63,7 @@ public class Customer {
     @JoinColumn(name = "USER_CREATOR_id", nullable = false)
     private User creator;
 
+    @Nullable
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentProcess> deploymentProcesses;
 }

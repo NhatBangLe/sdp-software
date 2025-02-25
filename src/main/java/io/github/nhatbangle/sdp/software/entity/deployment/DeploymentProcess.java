@@ -2,6 +2,7 @@ package io.github.nhatbangle.sdp.software.entity.deployment;
 
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.entity.Customer;
+import io.github.nhatbangle.sdp.software.entity.SoftwareLicense;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
 import io.github.nhatbangle.sdp.software.entity.User;
 import jakarta.annotation.Nullable;
@@ -14,6 +15,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
@@ -64,4 +66,20 @@ public class DeploymentProcess {
     )
     @JoinColumn(name = "USER_CREATOR_id", nullable = false)
     private User creator;
+
+    @Nullable
+    @OneToMany(mappedBy = "process", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentPhase> phases;
+
+    @Nullable
+    @OneToMany(mappedBy = "process", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentProcessHasModuleVersion> moduleVersions;
+
+    @Nullable
+    @OneToMany(mappedBy = "process", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<DeploymentProcessHasUser> users;
+
+    @Nullable
+    @OneToMany(mappedBy = "process", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<SoftwareLicense> licenses;
 }

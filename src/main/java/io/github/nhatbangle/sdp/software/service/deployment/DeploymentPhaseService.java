@@ -75,13 +75,21 @@ public class DeploymentPhaseService {
     }
 
     @NotNull
+    public List<String> getAllAttachments(@NotNull @UUID String phaseId) {
+        return phaseAtmRepository.findAllById_PhaseId(
+                        phaseId, Sort.by("createdAt").ascending())
+                .map(atm -> atm.getId().getAttachmentId())
+                .toList();
+    }
+
+    @NotNull
     @Cacheable(cacheNames = "sdp_software-deployment_phase-member", key = "#phaseId")
     public List<String> getAllMembers(
             @UUID @NotNull String phaseId
     ) throws NoSuchElementException {
         var members = deploymentPhaseHasUserRepository
                 .findAllById_PhaseId(phaseId, Sort.by("createdAt").ascending());
-        return members.stream().map(member -> member.getId().getUserId()).toList();
+        return members.map(member -> member.getId().getUserId()).toList();
     }
 
     @NotNull
@@ -141,11 +149,11 @@ public class DeploymentPhaseService {
 
         var id = DeploymentPhaseHasAttachmentId.builder()
                 .attachmentId(request.attachmentId())
-                .deploymentPhaseId(phaseId)
+                .phaseId(phaseId)
                 .build();
         switch (request.operator()) {
             case ADD -> {
-                if (phaseAtmRepository.existsById_DeploymentPhaseIdAndId_AttachmentId(phaseId, attachmentId)) {
+                if (phaseAtmRepository.existsById_PhaseIdAndId_AttachmentId(phaseId, attachmentId)) {
                     var message = messageSource.getMessage(
                             "deployment_phase.attachment_already_exists",
                             new Object[]{attachmentId, phaseId},
@@ -156,7 +164,7 @@ public class DeploymentPhaseService {
                 var attachment = DeploymentPhaseHasAttachment.builder()
                         .id(id)
                         .attachment(Attachment.builder().id(request.attachmentId()).build())
-                        .deploymentPhase(phase)
+                        .phase(phase)
                         .build();
                 phaseAtmRepository.save(attachment);
             }

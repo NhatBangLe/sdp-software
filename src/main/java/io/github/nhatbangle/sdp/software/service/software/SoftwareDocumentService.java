@@ -15,6 +15,7 @@ import io.github.nhatbangle.sdp.software.repository.software.SoftwareDocumentRep
 import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.DocumentTypeService;
 import jakarta.annotation.Nullable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -74,6 +76,14 @@ public class SoftwareDocumentService {
         var document = softwareDocumentRepository.findInfoById(documentId)
                 .orElseThrow(() -> notFoundHandler(documentId));
         return softwareDocumentMapper.toResponse(document);
+    }
+
+    @NotNull
+    public List<String> getAllAttachments(@NotNull @UUID String documentId) {
+        return docAtmRepository.findAllById_DocumentId(
+                documentId, Sort.by("createdAt").ascending())
+                .map(atm -> atm.getId().getAttachmentId())
+                .toList();
     }
 
     @NotNull

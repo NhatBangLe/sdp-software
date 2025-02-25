@@ -22,10 +22,10 @@ public class DeploymentPhaseHasAttachment {
     @EmbeddedId
     private DeploymentPhaseHasAttachmentId id;
 
-    @MapsId("deploymentPhaseId")
+    @MapsId("phaseId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "DEPLOYMENT_PHASE_id", nullable = false)
-    private DeploymentPhase deploymentPhase;
+    private DeploymentPhase phase;
 
     @MapsId("attachmentId")
     @ManyToOne(

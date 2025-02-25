@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Validated
 @RestController
 @Tag(name = "Software Document")
@@ -48,6 +50,14 @@ public class SoftwareDocumentController {
             @PathVariable @UUID String documentId
     ) {
         return service.getById(documentId);
+    }
+
+    @GetMapping("/{documentId}/attachment")
+    @ResponseStatus(HttpStatus.OK)
+    public List<String> getAllAttachments(
+            @PathVariable @UUID String documentId
+    ) {
+        return service.getAllAttachments(documentId);
     }
 
     @PostMapping("/{softwareVersionId}")
