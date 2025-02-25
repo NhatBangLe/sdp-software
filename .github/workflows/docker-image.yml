@@ -26,6 +26,6 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: {{defaultContext}}
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/sdp-software:latest
