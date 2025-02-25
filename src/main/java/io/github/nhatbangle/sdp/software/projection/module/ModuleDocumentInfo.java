@@ -1,5 +1,7 @@
 package io.github.nhatbangle.sdp.software.projection.module;
 
+import io.github.nhatbangle.sdp.software.projection.DocumentTypeName;
+
 import java.time.Instant;
 
 /**
@@ -15,4 +17,8 @@ public interface ModuleDocumentInfo {
     Instant getCreatedAt();
 
     Instant getUpdatedAt();
+
+    DocumentTypeName getType();
+
+    ModuleVersionName getVersion();
 }

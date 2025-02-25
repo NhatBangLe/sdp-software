@@ -12,6 +12,17 @@ public record ModuleDocumentResponse(
         String name,
         String description,
         long createdAtMs,
-        @Nullable Long updatedAtMs
+        @Nullable Long updatedAtMs,
+        DocumentType type,
+        ModuleVersion version
 ) implements Serializable {
+    public record DocumentType(
+            String name
+    ) implements Serializable {
+    }
+
+    public record ModuleVersion(
+            String name
+    ) implements Serializable {
+    }
 }
