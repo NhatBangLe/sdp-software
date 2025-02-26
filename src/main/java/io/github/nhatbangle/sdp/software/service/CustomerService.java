@@ -55,7 +55,7 @@ public class CustomerService {
                         pageable
                 )
                 .map(customerMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @Cacheable(key = "#customerId")

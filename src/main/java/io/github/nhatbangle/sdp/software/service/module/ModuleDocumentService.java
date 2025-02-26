@@ -63,7 +63,7 @@ public class ModuleDocumentService {
                 Objects.requireNonNullElse(documentName, ""),
                 pageable
         ).map(mapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

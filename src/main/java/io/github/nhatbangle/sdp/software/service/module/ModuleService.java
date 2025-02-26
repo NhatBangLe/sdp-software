@@ -56,7 +56,7 @@ public class ModuleService {
                         pageable
                 )
                 .map(moduleMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

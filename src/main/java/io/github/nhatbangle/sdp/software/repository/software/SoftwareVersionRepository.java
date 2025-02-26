@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.repository.software;
 
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
+import io.github.nhatbangle.sdp.software.projection.software.SoftwareVersionIdName;
 import io.github.nhatbangle.sdp.software.projection.software.SoftwareVersionInfo;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.UUID;
@@ -13,6 +14,13 @@ import java.util.Optional;
 
 @Validated
 public interface SoftwareVersionRepository extends JpaRepository<SoftwareVersion, String> {
+
+    Page<SoftwareVersionIdName> findAllBySoftware_User_IdAndSoftware_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
+            @NotNull @UUID String userId,
+            @NotNull String softwareName,
+            @NotNull String versionName,
+            @NotNull Pageable pageable
+    );
 
     Page<SoftwareVersionInfo> findAllBySoftware_IdAndNameContainsIgnoreCase(
             @UUID @NotNull String id,

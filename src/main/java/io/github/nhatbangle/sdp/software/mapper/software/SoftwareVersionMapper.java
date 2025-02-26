@@ -1,7 +1,9 @@
 package io.github.nhatbangle.sdp.software.mapper.software;
 
+import io.github.nhatbangle.sdp.software.dto.software.SoftwareNameAndVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionResponse;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
+import io.github.nhatbangle.sdp.software.projection.software.SoftwareVersionIdName;
 import io.github.nhatbangle.sdp.software.projection.software.SoftwareVersionInfo;
 
 public class SoftwareVersionMapper {
@@ -25,6 +27,16 @@ public class SoftwareVersionMapper {
                 entity.getDescription(),
                 entity.getCreatedAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null
+        );
+    }
+
+    public SoftwareNameAndVersionResponse toNameResponse(SoftwareVersionIdName entity) {
+        var software = entity.getSoftware();
+        return new SoftwareNameAndVersionResponse(
+                entity.getId(),
+                entity.getName(),
+                software.getId(),
+                software.getName()
         );
     }
 

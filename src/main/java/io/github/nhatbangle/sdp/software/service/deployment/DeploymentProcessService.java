@@ -90,7 +90,7 @@ public class DeploymentProcessService {
                         pageable
                 )
                 .map(mapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

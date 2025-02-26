@@ -54,7 +54,7 @@ public class DocumentTypeService {
                 Objects.requireNonNullElse(name, ""),
                 pageable
         ).map(mapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @Cacheable(key = "#typeId")

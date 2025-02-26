@@ -60,7 +60,7 @@ public class SoftwareService {
                         pageable
                 )
                 .map(softwareMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

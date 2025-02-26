@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.service.software;
 
 import io.github.nhatbangle.sdp.software.dto.*;
+import io.github.nhatbangle.sdp.software.dto.software.SoftwareNameAndVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionUpdateRequest;
@@ -29,14 +30,43 @@ import java.util.Objects;
 
 @Service
 @Validated
-@CacheConfig(cacheNames ="sdp_software-software_version")
+@CacheConfig(cacheNames = "sdp_software-software_version")
 @RequiredArgsConstructor
 public class SoftwareVersionService {
 
     private final MessageSource messageSource;
-    private final SoftwareVersionRepository softwareVersionRepository;
-    private final SoftwareVersionMapper softwareVersionMapper;
+    private final SoftwareVersionRepository repository;
+    private final SoftwareVersionMapper mapper;
     private final SoftwareService softwareService;
+
+    @NotNull
+    public PagingWrapper<SoftwareNameAndVersionResponse> getAllByUserId(
+            @UUID @NotNull String userId,
+            @Nullable String softwareName,
+            @Nullable String versionName,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize);
+        var page = repository
+                .findAllBySoftware_User_IdAndSoftware_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
+                        userId,
+                        Objects.requireNonNullElse(softwareName, ""),
+                        Objects.requireNonNullElse(versionName, ""),
+                        pageable
+                ).map(mapper::toNameResponse);
+        var wrapper = PagingWrapper.from(page);
+        wrapper.sort((o1, o2) -> {
+            var softName1 = o1.softwareName();
+            var softName2 = o2.softwareName();
+            var verName1 = o1.versionName();
+            var verName2 = o2.versionName();
+
+            if (softName1.equals(softName2)) return verName1.compareTo(verName2);
+            return softName1.compareTo(softName2);
+        });
+        return wrapper;
+    }
 
     @NotNull
     public PagingWrapper<SoftwareVersionResponse> getAllBySoftwareId(
@@ -46,14 +76,14 @@ public class SoftwareVersionService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var page = softwareVersionRepository
+        var page = repository
                 .findAllBySoftware_IdAndNameContainsIgnoreCase(
                         softwareId,
                         Objects.requireNonNullElse(name, ""),
                         pageable
                 )
-                .map(softwareVersionMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+                .map(mapper::toResponse);
+        return PagingWrapper.from(page);
     }
 
     @NotNull
@@ -61,9 +91,9 @@ public class SoftwareVersionService {
     public SoftwareVersionResponse getById(
             @UUID @NotNull String versionId
     ) throws NoSuchElementException {
-        var software = softwareVersionRepository.findInfoById(versionId)
+        var software = repository.findInfoById(versionId)
                 .orElseThrow(() -> notFoundHandler(versionId));
-        return softwareVersionMapper.toResponse(software);
+        return mapper.toResponse(software);
     }
 
     @NotNull
@@ -74,13 +104,14 @@ public class SoftwareVersionService {
             @NotNull @Valid SoftwareVersionCreateRequest request
     ) throws NoSuchElementException {
         var software = softwareService.findById(softwareId);
-        var version = softwareVersionRepository.save(SoftwareVersion.builder()
+        var version = repository.save(SoftwareVersion.builder()
                 .name(request.name())
                 .description(request.description())
                 .software(software)
                 .build());
-        return softwareVersionMapper.toResponse(version);
+        return mapper.toResponse(version);
     }
+
     @NotNull
     @Transactional
     @CachePut(key = "#softwareId")
@@ -92,8 +123,8 @@ public class SoftwareVersionService {
         software.setName(request.name());
         software.setDescription(request.description());
 
-        var savedSoftware = softwareVersionRepository.save(software);
-        return softwareVersionMapper.toResponse(savedSoftware);
+        var savedSoftware = repository.save(software);
+        return mapper.toResponse(savedSoftware);
     }
 
     @CacheEvict(key = "#softwareId")
@@ -101,13 +132,13 @@ public class SoftwareVersionService {
             @UUID @NotNull String softwareId
     ) throws NoSuchElementException {
         var software = findById(softwareId);
-        softwareVersionRepository.delete(software);
+        repository.delete(software);
     }
 
     @NotNull
     public SoftwareVersion findById(@UUID @NotNull String versionId)
             throws NoSuchElementException {
-        return softwareVersionRepository.findById(versionId)
+        return repository.findById(versionId)
                 .orElseThrow(() -> notFoundHandler(versionId));
     }
 

@@ -53,7 +53,7 @@ public class ModuleVersionService {
                         pageable
                 )
                 .map(moduleVersionMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

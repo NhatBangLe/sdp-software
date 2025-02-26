@@ -65,7 +65,7 @@ public class SoftwareDocumentService {
                         Objects.requireNonNullElse(documentName, ""),
                         pageable
                 ).map(softwareDocumentMapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull

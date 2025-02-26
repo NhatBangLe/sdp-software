@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.controller.software;
 
 import io.github.nhatbangle.sdp.software.dto.*;
+import io.github.nhatbangle.sdp.software.dto.software.SoftwareNameAndVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionUpdateRequest;
@@ -23,6 +24,24 @@ import org.springframework.web.bind.annotation.*;
 public class SoftwareVersionController {
 
     private final SoftwareVersionService service;
+
+    @GetMapping("/{userId}/user")
+    @ResponseStatus(HttpStatus.OK)
+    public PagingWrapper<SoftwareNameAndVersionResponse> getAllVersionsByUserId(
+            @PathVariable @UUID String userId,
+            @RequestParam(required = false, defaultValue = "") String softwareName,
+            @RequestParam(required = false, defaultValue = "") String versionName,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
+    ) {
+        return service.getAllByUserId(
+                userId,
+                softwareName,
+                versionName,
+                pageNumber,
+                pageSize
+        );
+    }
 
     @GetMapping("/{softwareId}/software")
     @ResponseStatus(HttpStatus.OK)

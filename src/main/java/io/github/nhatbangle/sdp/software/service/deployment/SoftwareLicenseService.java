@@ -66,7 +66,7 @@ public class SoftwareLicenseService {
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
         var page = repository.findAllByProcess_Id(processId, pageable).map(mapper::toResponse);
-        return PagingWrapper.fromPage(page);
+        return PagingWrapper.from(page);
     }
 
     @NotNull
