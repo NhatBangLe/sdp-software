@@ -22,6 +22,24 @@ public class ModuleVersionController {
 
     private final ModuleVersionService service;
 
+    @GetMapping("/{softwareVersionId}/software-version")
+    @ResponseStatus(HttpStatus.OK)
+    public PagingWrapper<ModuleNameAndVersionResponse> getAllBySoftwareVersionId(
+            @PathVariable @UUID String softwareVersionId,
+            @RequestParam(required = false) String moduleName,
+            @RequestParam(required = false) String versionName,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
+    ) {
+        return service.getAllBySoftwareVersionId(
+                softwareVersionId,
+                moduleName,
+                versionName,
+                pageNumber,
+                pageSize
+        );
+    }
+
     @GetMapping("/{moduleId}/module")
     @ResponseStatus(HttpStatus.OK)
     public PagingWrapper<ModuleVersionResponse> getAllByModuleId(

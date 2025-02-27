@@ -34,9 +34,39 @@ import java.util.Objects;
 public class ModuleVersionService {
 
     private final MessageSource messageSource;
-    private final ModuleVersionMapper moduleVersionMapper;
+    private final ModuleVersionMapper mapper;
     private final ModuleVersionRepository moduleVersionRepository;
     private final ModuleService moduleService;
+
+    @NotNull
+    public PagingWrapper<ModuleNameAndVersionResponse> getAllBySoftwareVersionId(
+            @UUID @NotNull String softwareVersionId,
+            @Nullable String moduleName,
+            @Nullable String versionName,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize);
+        var page = moduleVersionRepository
+                .findAllByModule_SoftwareVersion_IdAndModule_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
+                        softwareVersionId,
+                        Objects.requireNonNullElse(moduleName, ""),
+                        Objects.requireNonNullElse(versionName, ""),
+                        pageable
+                )
+                .map(mapper::toResponse);
+        var wrapper = PagingWrapper.from(page);
+        wrapper.sort((o1, o2) -> {
+            var moduleName1 = o1.moduleName();
+            var moduleName2 = o2.moduleName();
+            var verName1 = o1.versionName();
+            var verName2 = o2.versionName();
+
+            if (moduleName1.equals(moduleName2)) return verName1.compareTo(verName2);
+            return moduleName1.compareTo(moduleName2);
+        });
+        return wrapper;
+    }
 
     @NotNull
     public PagingWrapper<ModuleVersionResponse> getAllByModuleId(
@@ -52,7 +82,7 @@ public class ModuleVersionService {
                         Objects.requireNonNullElse(name, ""),
                         pageable
                 )
-                .map(moduleVersionMapper::toResponse);
+                .map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
@@ -63,7 +93,7 @@ public class ModuleVersionService {
     ) throws NoSuchElementException {
         var version = moduleVersionRepository.findInfoById(versionId)
                 .orElseThrow(() -> notFoundHandler(versionId));
-        return moduleVersionMapper.toResponse(version);
+        return mapper.toResponse(version);
     }
 
     @NotNull
@@ -79,7 +109,7 @@ public class ModuleVersionService {
                 .description(request.description())
                 .module(module)
                 .build());
-        return moduleVersionMapper.toResponse(version);
+        return mapper.toResponse(version);
     }
 
     @NotNull
@@ -94,7 +124,7 @@ public class ModuleVersionService {
         version.setDescription(request.description());
 
         var savedVersion = moduleVersionRepository.save(version);
-        return moduleVersionMapper.toResponse(savedVersion);
+        return mapper.toResponse(savedVersion);
     }
 
     @CacheEvict(key = "#moduleId")

@@ -30,7 +30,7 @@ public class SoftwareVersionMapper {
         );
     }
 
-    public SoftwareNameAndVersionResponse toNameResponse(SoftwareVersionIdName entity) {
+    public SoftwareNameAndVersionResponse toResponse(SoftwareVersionIdName entity) {
         var software = entity.getSoftware();
         return new SoftwareNameAndVersionResponse(
                 entity.getId(),

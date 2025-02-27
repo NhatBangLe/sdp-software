@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.repository.module;
 
 import io.github.nhatbangle.sdp.software.entity.module.ModuleVersion;
+import io.github.nhatbangle.sdp.software.projection.module.ModuleVersionIdName;
 import io.github.nhatbangle.sdp.software.projection.module.ModuleVersionInfo;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.UUID;
@@ -13,6 +14,13 @@ import java.util.Optional;
 
 @Validated
 public interface ModuleVersionRepository extends JpaRepository<ModuleVersion, String> {
+
+    Page<ModuleVersionIdName> findAllByModule_SoftwareVersion_IdAndModule_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
+            @NotNull @UUID String id,
+            @NotNull String moduleName,
+            @NotNull String versionName,
+            @NotNull Pageable pageable
+    );
 
     Page<ModuleVersionInfo> findAllByModule_IdAndNameContainsIgnoreCase(
             @UUID @NotNull String id,

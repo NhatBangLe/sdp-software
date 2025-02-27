@@ -54,7 +54,7 @@ public class SoftwareVersionService {
                         Objects.requireNonNullElse(softwareName, ""),
                         Objects.requireNonNullElse(versionName, ""),
                         pageable
-                ).map(mapper::toNameResponse);
+                ).map(mapper::toResponse);
         var wrapper = PagingWrapper.from(page);
         wrapper.sort((o1, o2) -> {
             var softName1 = o1.softwareName();
