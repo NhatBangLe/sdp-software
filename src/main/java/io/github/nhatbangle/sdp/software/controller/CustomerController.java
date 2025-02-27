@@ -33,8 +33,8 @@ public class CustomerController {
             @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
         return service.getAll(
-                email,
                 name,
+                email,
                 pageNumber,
                 pageSize
         );
