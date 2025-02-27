@@ -4,21 +4,22 @@ import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessRespons
 import io.github.nhatbangle.sdp.software.entity.Customer;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
-import io.github.nhatbangle.sdp.software.projection.customer.CustomerName;
 import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessInfo;
-import io.github.nhatbangle.sdp.software.projection.software.SoftwareVersionName;
 
 public class DeploymentProcessMapper {
 
     public DeploymentProcessResponse toResponse(DeploymentProcessInfo entity) {
-        var updatedAt = entity.getUpdatedAt();
+        var updatedAt = entity.updatedAt();
         return new DeploymentProcessResponse(
-                entity.getId(),
-                entity.getStatus(),
-                entity.getCreatedAt().toEpochMilli(),
+                entity.id(),
+                entity.status(),
+                entity.createdAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null,
-                softwareVersionToResponse(entity.getSoftwareVersion()),
-                customerToResponse(entity.getCustomer())
+                new DeploymentProcessResponse.Software(
+                        entity.softwareName(),
+                        entity.softwareVersionName()
+                ),
+                new DeploymentProcessResponse.Customer( entity.customerName() )
         );
     }
 
@@ -34,23 +35,10 @@ public class DeploymentProcessMapper {
         );
     }
 
-    private DeploymentProcessResponse.Software softwareVersionToResponse(SoftwareVersionName versionInfo) {
-        return new DeploymentProcessResponse.Software(
-                versionInfo.getName(),
-                versionInfo.getSoftware().getName()
-        );
-    }
-
     private DeploymentProcessResponse.Software softwareVersionToResponse(SoftwareVersion version) {
         return new DeploymentProcessResponse.Software(
-                version.getName(),
-                version.getSoftware().getName()
-        );
-    }
-
-    private DeploymentProcessResponse.Customer customerToResponse(CustomerName customer) {
-        return new DeploymentProcessResponse.Customer(
-                customer.getName()
+                version.getSoftware().getName(),
+                version.getName()
         );
     }
 

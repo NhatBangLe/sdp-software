@@ -1,4 +1,4 @@
-package io.github.nhatbangle.sdp.software.projection.customer;
+package io.github.nhatbangle.sdp.software.projection;
 
 import java.time.Instant;
 

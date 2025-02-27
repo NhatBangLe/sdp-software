@@ -19,10 +19,13 @@ import java.util.Optional;
 public interface DeploymentProcessRepository extends JpaRepository<DeploymentProcess, Long> {
 
     @Query("""
-            select d from DeploymentProcess d
-            where upper(d.softwareVersion.name) like upper(concat('%', :versionName, '%'))
-                    and upper(d.customer.name) like upper(concat('%', :customerName, '%'))
-                    and (:status = null or d.status = :status)
+            SELECT new io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessInfo(
+                d.id, d.status, d.createdAt, d.updatedAt,
+                d.softwareVersion.software.name, d.softwareVersion.name, d.customer.name)
+            FROM DeploymentProcess d
+            WHERE upper(d.softwareVersion.name) LIKE upper(concat('%', :versionName, '%'))
+                    AND upper(d.customer.name) LIKE upper(concat('%', :customerName, '%'))
+                    AND (:status is null OR d.status = :status)
             """)
     Page<DeploymentProcessInfo> findAllBySoftwareVersion_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
             @NotNull @Param("versionName") String softwareVersionName,
@@ -31,6 +34,12 @@ public interface DeploymentProcessRepository extends JpaRepository<DeploymentPro
             @NotNull Pageable pageable
     );
 
+    @Query("""
+            SELECT new io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessInfo(
+                d.id, d.status, d.createdAt, d.updatedAt,
+                d.softwareVersion.software.name, d.softwareVersion.name, d.customer.name)
+            FROM DeploymentProcess d WHERE d.id = ?1
+            """)
     Optional<DeploymentProcessInfo> findInfoById(@Min(0) @NotNull Long id);
 
 }

@@ -74,6 +74,7 @@ public class DeploymentProcessService {
     private String mailBoxQueue;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<DeploymentProcessResponse> getAll(
             @Nullable String softwareVersionName,
             @Nullable String customerName,
@@ -88,12 +89,12 @@ public class DeploymentProcessService {
                         Objects.requireNonNullElse(customerName, ""),
                         status,
                         pageable
-                )
-                .map(mapper::toResponse);
+                ).map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#processId")
     public DeploymentProcessResponse getById(
             @Min(0) @NotNull Long processId
@@ -104,6 +105,7 @@ public class DeploymentProcessService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
     public List<String> getAllModuleVersions(
             @Min(0) @NotNull Long processId
@@ -114,6 +116,7 @@ public class DeploymentProcessService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
     public List<String> getAllMembers(
             @Min(0) @NotNull Long processId

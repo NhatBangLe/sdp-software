@@ -2,7 +2,7 @@ package io.github.nhatbangle.sdp.software.mapper;
 
 import io.github.nhatbangle.sdp.software.dto.customer.CustomerResponse;
 import io.github.nhatbangle.sdp.software.entity.Customer;
-import io.github.nhatbangle.sdp.software.projection.customer.CustomerInfo;
+import io.github.nhatbangle.sdp.software.projection.CustomerInfo;
 
 public class CustomerMapper {
 
