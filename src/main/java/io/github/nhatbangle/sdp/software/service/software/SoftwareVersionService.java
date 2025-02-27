@@ -40,6 +40,7 @@ public class SoftwareVersionService {
     private final SoftwareService softwareService;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<SoftwareNameAndVersionResponse> getAllByUserId(
             @UUID @NotNull String userId,
             @Nullable String softwareName,
@@ -69,6 +70,7 @@ public class SoftwareVersionService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<SoftwareVersionResponse> getAllBySoftwareId(
             @UUID @NotNull String softwareId,
             @Nullable String name,
@@ -87,6 +89,7 @@ public class SoftwareVersionService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#versionId")
     public SoftwareVersionResponse getById(
             @UUID @NotNull String versionId

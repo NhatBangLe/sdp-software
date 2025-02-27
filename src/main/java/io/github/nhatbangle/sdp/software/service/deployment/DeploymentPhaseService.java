@@ -57,6 +57,7 @@ public class DeploymentPhaseService {
     private final AttachmentService atmService;
 
     @NotNull
+    @Transactional(readOnly = true)
     public List<DeploymentPhaseResponse> getAllByProcessId(
             @Min(0) @NotNull Long processId
     ) {
@@ -65,6 +66,7 @@ public class DeploymentPhaseService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#phaseId")
     public DeploymentPhaseResponse getById(
             @UUID @NotNull String phaseId
@@ -75,6 +77,7 @@ public class DeploymentPhaseService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     public List<String> getAllAttachments(@NotNull @UUID String phaseId) {
         return phaseAtmRepository.findAllById_PhaseId(
                         phaseId, Sort.by("createdAt").ascending())
@@ -83,6 +86,7 @@ public class DeploymentPhaseService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(cacheNames = "sdp_software-deployment_phase-member", key = "#phaseId")
     public List<String> getAllMembers(
             @UUID @NotNull String phaseId

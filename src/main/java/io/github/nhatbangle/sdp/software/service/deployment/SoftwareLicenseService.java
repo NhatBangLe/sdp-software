@@ -59,6 +59,7 @@ public class SoftwareLicenseService {
     private String mailBoxQueue;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<SoftwareLicenseResponse> getAllByProcessId(
             @Min(0) @NotNull Long processId,
             @Min(0) int pageNumber,
@@ -70,6 +71,7 @@ public class SoftwareLicenseService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#phaseId")
     public SoftwareLicenseResponse getById(
             @UUID @NotNull String phaseId

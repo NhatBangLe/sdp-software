@@ -44,6 +44,7 @@ public class DeploymentPhaseTypeService {
     private final UserRepository userRepository;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<DeploymentPhaseTypeResponse> getAll(
             @UUID @NotNull String userId,
             @Nullable String name,
@@ -60,6 +61,7 @@ public class DeploymentPhaseTypeService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#phaseId")
     public DeploymentPhaseTypeResponse getById(
             @UUID @NotNull String phaseId

@@ -42,6 +42,7 @@ public class ModuleService {
     private final ModuleMapper moduleMapper;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<ModuleResponse> getAllByVersionId(
             @UUID @NotNull String softwareVersionId,
             @Nullable String name,
@@ -60,6 +61,7 @@ public class ModuleService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#moduleId")
     public ModuleResponse getById(
             @UUID @NotNull String moduleId

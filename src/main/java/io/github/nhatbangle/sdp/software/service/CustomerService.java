@@ -41,6 +41,8 @@ public class CustomerService {
     private final CustomerMapper customerMapper;
     private final UserRepository userRepository;
 
+    @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<CustomerResponse> getAll(
             @Nullable String name,
             @Nullable String email,
@@ -58,6 +60,8 @@ public class CustomerService {
         return PagingWrapper.from(page);
     }
 
+    @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#customerId")
     public CustomerResponse getById(
             @UUID @NotNull String customerId
@@ -67,6 +71,7 @@ public class CustomerService {
         return customerMapper.toResponse(customer);
     }
 
+    @NotNull
     @Transactional
     @CachePut(key = "#result.id()")
     public CustomerResponse create(
@@ -87,6 +92,7 @@ public class CustomerService {
         return customerMapper.toResponse(customer);
     }
 
+    @NotNull
     @Transactional
     @CachePut(key = "#customerId")
     public CustomerResponse updateById(

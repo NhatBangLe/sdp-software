@@ -46,6 +46,7 @@ public class SoftwareService {
     private final UserRepository userRepository;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<SoftwareResponse> getAllByUserId(
             @UUID @NotNull String userId,
             @Nullable String name,

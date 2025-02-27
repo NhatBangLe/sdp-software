@@ -42,6 +42,8 @@ public class DocumentTypeService {
     private final UserService userService;
     private final UserRepository userRepository;
 
+    @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<DocumentTypeResponse> getAll(
             @UUID @NotNull String userId,
             @Nullable String name,
@@ -57,6 +59,8 @@ public class DocumentTypeService {
         return PagingWrapper.from(page);
     }
 
+    @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#typeId")
     public DocumentTypeResponse getById(
             @UUID @NotNull String typeId
@@ -66,6 +70,7 @@ public class DocumentTypeService {
         return mapper.toResponse(type);
     }
 
+    @NotNull
     @Transactional
     @CachePut(key = "#result.id()")
     public DocumentTypeResponse create(

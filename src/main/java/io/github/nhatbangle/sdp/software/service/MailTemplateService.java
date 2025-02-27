@@ -41,6 +41,8 @@ public class MailTemplateService {
     private final MailTemplateMapper mapper;
     private final MailTemplateRepository repository;
 
+    @NotNull
+    @Transactional(readOnly = true)
     public MailTemplateResponse getByUserIdAndType(
             @NotNull @UUID String userId,
             @NotNull MailTemplateType type
@@ -49,6 +51,8 @@ public class MailTemplateService {
         return mapper.toResponse(template);
     }
 
+    @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#templateId")
     public MailTemplateResponse getById(
             @UUID @NotNull String templateId
@@ -58,6 +62,7 @@ public class MailTemplateService {
         return mapper.toResponse(customer);
     }
 
+    @NotNull
     @Transactional
     @CachePut(key = "#result.id()")
     public MailTemplateResponse create(
@@ -91,6 +96,7 @@ public class MailTemplateService {
         return mapper.toResponse(template);
     }
 
+    @NotNull
     @Transactional
     @CachePut(key = "#templateId")
     public MailTemplateResponse updateById(

@@ -49,6 +49,7 @@ public class ModuleDocumentService {
     private final ModuleVersionService moduleVersionService;
 
     @NotNull
+    @Transactional(readOnly = true)
     public PagingWrapper<ModuleDocumentResponse> getAllByVersionId(
             @UUID @NotNull String moduleVersionId,
             @Nullable String documentTypeName,
@@ -67,6 +68,7 @@ public class ModuleDocumentService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#documentId")
     public ModuleDocumentResponse getById(
             @UUID @NotNull String documentId
@@ -77,6 +79,7 @@ public class ModuleDocumentService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     public List<String> getAttachments(@NotNull @UUID String documentId) {
         return docAtmRepository.findAllById_DocumentId(
                         documentId, Sort.by("createdAt").ascending())
