@@ -10,6 +10,8 @@ import java.time.Instant;
 public interface MailTemplateInfo {
     String getId();
 
+    String getSubject();
+
     byte[] getContent();
 
     MailTemplateType getType();

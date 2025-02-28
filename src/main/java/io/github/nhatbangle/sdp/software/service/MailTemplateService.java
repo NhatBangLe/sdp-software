@@ -24,6 +24,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -40,6 +41,8 @@ public class MailTemplateService {
     private final UserRepository userRepository;
     private final MailTemplateMapper mapper;
     private final MailTemplateRepository repository;
+
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     @NotNull
     @Transactional(readOnly = true)
@@ -69,9 +72,8 @@ public class MailTemplateService {
             @UUID @NotNull String userId,
             @NotNull @Valid MailTemplateCreateRequest request
     ) throws IllegalArgumentException, ServiceUnavailableException {
-        var charset = StandardCharsets.UTF_8;
         var templateType = request.type();
-        var content = request.content().getBytes(charset);
+        var content = request.content().getBytes(DEFAULT_CHARSET);
 
         var templateOptional = repository.findByUser_IdAndType(userId, templateType);
         if (templateOptional.isPresent()) {
@@ -89,7 +91,8 @@ public class MailTemplateService {
         });
 
         var template = repository.save(MailTemplate.builder()
-                .content(request.content().getBytes(charset))
+                .subject(request.subject())
+                .content(request.content().getBytes(DEFAULT_CHARSET))
                 .type(request.type())
                 .user(user)
                 .build());
@@ -104,7 +107,8 @@ public class MailTemplateService {
             @NotNull @Valid MailTemplateUpdateRequest request
     ) throws NoSuchElementException {
         var template = findById(templateId);
-        template.setContent(request.content().getBytes(StandardCharsets.UTF_8));
+        template.setSubject(request.subject());
+        template.setContent(request.content().getBytes(DEFAULT_CHARSET));
         template.setType(request.type());
 
         var savedTemplate = repository.save(template);

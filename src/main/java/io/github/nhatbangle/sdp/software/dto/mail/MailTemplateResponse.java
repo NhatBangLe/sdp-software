@@ -10,6 +10,7 @@ import java.io.Serializable;
  */
 public record MailTemplateResponse(
         String id,
+        String subject,
         String content,
         MailTemplateType type,
         long createdAtMs,

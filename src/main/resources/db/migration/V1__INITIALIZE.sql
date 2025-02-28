@@ -534,12 +534,13 @@ CREATE INDEX `fk_UPDATE_PHASE_HISTORY_USER1_idx` ON `software_db`.update_phase_h
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `software_db`.mail_template
 (
-    `id`         VARCHAR(36) NOT NULL,
-    `content`    BLOB        NOT NULL,
-    `created_at` DATETIME    NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME    NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    `type`       VARCHAR(45) NOT NULL,
-    `USER_id`    VARCHAR(36) NOT NULL,
+    `id`         VARCHAR(36)  NOT NULL,
+    `subject`    VARCHAR(150) NOT NULL,
+    `content`    BLOB         NOT NULL,
+    `created_at` DATETIME     NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME     NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `type`       VARCHAR(45)  NOT NULL,
+    `USER_id`    VARCHAR(36)  NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT fk_MAIL_TEMPLATE_USER1
         FOREIGN KEY (`USER_id`)

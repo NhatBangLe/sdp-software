@@ -3,6 +3,7 @@ package io.github.nhatbangle.sdp.software.entity;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -25,6 +26,10 @@ public class MailTemplate {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
+
+    @NotBlank
+    @Column(name = "subject", nullable = false, length = 150)
+    private String subject;
 
     @Lob
     @NotNull

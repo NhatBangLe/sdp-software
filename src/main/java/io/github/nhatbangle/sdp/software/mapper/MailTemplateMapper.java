@@ -12,6 +12,7 @@ public class MailTemplateMapper {
         var updatedAt = entity.getUpdatedAt();
         return new MailTemplateResponse(
                 entity.getId(),
+                entity.getSubject(),
                 new String(entity.getContent(), StandardCharsets.UTF_8),
                 entity.getType(),
                 entity.getCreatedAt().toEpochMilli(),
@@ -23,6 +24,7 @@ public class MailTemplateMapper {
         var updatedAt = entity.getUpdatedAt();
         return new MailTemplateResponse(
                 entity.getId(),
+                entity.getSubject(),
                 new String(entity.getContent(), StandardCharsets.UTF_8),
                 entity.getType(),
                 entity.getCreatedAt().toEpochMilli(),

@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
@@ -151,7 +150,7 @@ public class SoftwareLicenseService {
             @NotNull Stream<SoftwareLicense> licenseStream
     ) throws NoSuchElementException {
         var filtered = licenseStream.filter(license -> {
-            var charset = StandardCharsets.UTF_8;
+            var charset = MailTemplateService.DEFAULT_CHARSET;
             var process = license.getProcess();
             var creatorId = process.getCreator().getId();
             try {
@@ -169,6 +168,7 @@ public class SoftwareLicenseService {
                         .replace(MailTemplatePlaceholder.LICENSE_END_TIME.name(), license.getEndTime().toString());
 
                 var payload = new MailSendPayload(
+                        template.getSubject(),
                         content.getBytes(charset),
                         charset.name(),
                         customer.getEmail()

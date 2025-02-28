@@ -47,7 +47,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -166,7 +165,7 @@ public class DeploymentProcessService {
             @NotNull MailTemplate template,
             @NotNull DeploymentProcess process
     ) {
-        var charset = StandardCharsets.UTF_8;
+        var charset = MailTemplateService.DEFAULT_CHARSET;
         var customer = process.getCustomer();
         var softwareVersion = process.getSoftwareVersion();
         var software = softwareVersion.getSoftware();
@@ -177,6 +176,7 @@ public class DeploymentProcessService {
                 .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.name(), softwareVersion.getName());
 
         var payload = new MailSendPayload(
+                template.getSubject(),
                 content.getBytes(charset),
                 charset.name(),
                 customer.getEmail()
