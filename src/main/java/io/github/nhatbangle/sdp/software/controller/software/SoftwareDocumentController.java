@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.controller.software;
 
-import io.github.nhatbangle.sdp.software.dto.*;
+import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentResponse;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentUpdateRequest;

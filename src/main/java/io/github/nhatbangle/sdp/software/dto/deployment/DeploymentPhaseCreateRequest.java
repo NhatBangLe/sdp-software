@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.UUID;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO for {@link io.github.nhatbangle.sdp.software.entity.deployment.DeploymentPhase}
@@ -17,6 +18,7 @@ public record DeploymentPhaseCreateRequest(
         @Nullable @Size(max = 255) String description,
         @NotNull LocalDate plannedStartDate,
         @NotNull LocalDate plannedEndDate,
-        @NotNull @UUID String phaseTypeId
+        @NotNull @UUID String phaseTypeId,
+        @Nullable List<@NotNull @UUID String> attachmentIds
 ) implements Serializable {
 }

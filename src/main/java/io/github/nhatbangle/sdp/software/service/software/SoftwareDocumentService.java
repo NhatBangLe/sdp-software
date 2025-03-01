@@ -1,6 +1,7 @@
 package io.github.nhatbangle.sdp.software.service.software;
 
-import io.github.nhatbangle.sdp.software.dto.*;
+import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentResponse;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentUpdateRequest;
@@ -84,7 +85,7 @@ public class SoftwareDocumentService {
     @Transactional(readOnly = true)
     public List<String> getAllAttachments(@NotNull @UUID String documentId) {
         return docAtmRepository.findAllById_DocumentId(
-                documentId, Sort.by("createdAt").ascending())
+                        documentId, Sort.by("createdAt").ascending())
                 .map(atm -> atm.getId().getAttachmentId())
                 .toList();
     }
@@ -105,6 +106,22 @@ public class SoftwareDocumentService {
                 .version(version)
                 .type(type)
                 .build());
+        var attachmentIds = request.attachmentIds();
+        if (attachmentIds != null && !attachmentIds.isEmpty()) {
+            var documentId = document.getId();
+            var attachments = attachmentIds.stream().map(atmId -> {
+                var id = SoftwareDocumentHasAttachmentId.builder()
+                        .attachmentId(atmId)
+                        .documentId(documentId)
+                        .build();
+                return SoftwareDocumentHasAttachment.builder()
+                        .id(id)
+                        .attachment(Attachment.builder().id(atmId).build())
+                        .document(document)
+                        .build();
+            }).toList();
+            docAtmRepository.saveAll(attachments);
+        }
         return softwareDocumentMapper.toResponse(document);
     }
 

@@ -117,6 +117,23 @@ public class DeploymentPhaseService {
                 .type(type)
                 .process(process)
                 .build());
+        var attachmentIds = request.attachmentIds();
+        if (attachmentIds != null && !attachmentIds.isEmpty()) {
+            var phaseId = phase.getId();
+            var attachments = attachmentIds.stream().map(atmId -> {
+                var id = DeploymentPhaseHasAttachmentId.builder()
+                        .attachmentId(atmId)
+                        .phaseId(phaseId)
+                        .build();
+                return DeploymentPhaseHasAttachment.builder()
+                        .id(id)
+                        .attachment(Attachment.builder().id(atmId).build())
+                        .phase(phase)
+                        .build();
+            }).toList();
+            phaseAtmRepository.saveAll(attachments);
+        }
+
         return mapper.toResponse(phase);
     }
 

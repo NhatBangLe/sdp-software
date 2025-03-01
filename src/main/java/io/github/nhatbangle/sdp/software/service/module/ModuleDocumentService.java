@@ -103,6 +103,23 @@ public class ModuleDocumentService {
                 .version(version)
                 .type(type)
                 .build());
+        var attachmentIds = request.attachmentIds();
+        if (attachmentIds != null && !attachmentIds.isEmpty()) {
+            var documentId = document.getId();
+            var attachments = attachmentIds.stream().map(atmId -> {
+                var id = ModuleDocumentHasAttachmentId.builder()
+                        .attachmentId(atmId)
+                        .documentId(documentId)
+                        .build();
+                return ModuleDocumentHasAttachment.builder()
+                        .id(id)
+                        .attachment(Attachment.builder().id(atmId).build())
+                        .document(document)
+                        .build();
+            }).toList();
+            docAtmRepository.saveAll(attachments);
+        }
+
         return mapper.toResponse(document);
     }
 
