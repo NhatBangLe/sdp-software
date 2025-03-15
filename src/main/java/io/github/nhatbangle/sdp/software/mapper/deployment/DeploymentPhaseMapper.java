@@ -11,6 +11,8 @@ public class DeploymentPhaseMapper {
     public DeploymentPhaseResponse toResponse(DeploymentPhaseInfo entity) {
         var updatedAt = entity.getUpdatedAt();
         var userLastUpdated = entity.getUserLastUpdate();
+        var actualStartDate = entity.getActualStartDate();
+        var actualEndDate = entity.getActualEndDate();
         return new DeploymentPhaseResponse(
                 entity.getId(),
                 entity.getNumOrder(),
@@ -18,18 +20,20 @@ public class DeploymentPhaseMapper {
                 entity.getCreatedAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null,
                 phaseTypeNameToResponse(entity.getType()),
-                entity.getPlannedStartDate(),
-                entity.getPlannedEndDate(),
-                entity.getActualStartDate(),
-                entity.getActualEndDate(),
+                entity.getPlannedStartDate().toString(),
+                entity.getPlannedEndDate().toString(),
+                actualStartDate != null ? actualStartDate.toString() : null,
+                actualEndDate != null ? actualEndDate.toString() : null,
                 entity.getIsDone(),
                 userLastUpdated != null ? userLastUpdated.getId() : null
         );
     }
 
     public DeploymentPhaseResponse toResponse(DeploymentPhase entity) {
-        var userLastUpdated = entity.getUserLastUpdate();
+        var actualEndDate = entity.getActualEndDate();
+        var actualStartDate = entity.getActualStartDate();
         var updatedAt = entity.getUpdatedAt();
+        var userLastUpdated = entity.getUserLastUpdate();
         return new DeploymentPhaseResponse(
                 entity.getId(),
                 entity.getNumOrder(),
@@ -37,10 +41,10 @@ public class DeploymentPhaseMapper {
                 entity.getCreatedAt().toEpochMilli(),
                 updatedAt != null ? updatedAt.toEpochMilli() : null,
                 phaseTypeNameToResponse(entity.getType()),
-                entity.getPlannedStartDate(),
-                entity.getPlannedEndDate(),
-                entity.getActualStartDate(),
-                entity.getActualEndDate(),
+                entity.getPlannedStartDate().toString(),
+                entity.getPlannedEndDate().toString(),
+                actualStartDate != null ? actualStartDate.toString() : null,
+                actualEndDate != null ? actualEndDate.toString() : null,
                 entity.getIsDone(),
                 userLastUpdated != null ? userLastUpdated.getId() : null
         );

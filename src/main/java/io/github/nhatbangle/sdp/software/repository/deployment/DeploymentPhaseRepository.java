@@ -8,13 +8,13 @@ import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Validated
 public interface DeploymentPhaseRepository extends JpaRepository<DeploymentPhase, String> {
 
-    List<DeploymentPhaseInfo> findAllByProcess_Id(@Min(0) @NotNull Long id);
+    Stream<DeploymentPhaseInfo> findAllInfoByProcess_Id(@Min(0) @NotNull Long id);
 
     Optional<DeploymentPhaseInfo> findInfoById(@UUID @NotNull String id);
 

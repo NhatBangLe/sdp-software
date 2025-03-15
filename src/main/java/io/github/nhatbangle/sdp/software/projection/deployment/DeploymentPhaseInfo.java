@@ -1,7 +1,7 @@
 package io.github.nhatbangle.sdp.software.projection.deployment;
 
-import io.github.nhatbangle.sdp.software.entity.User;
 import jakarta.annotation.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +32,15 @@ public interface DeploymentPhaseInfo {
 
     LocalDate getActualEndDate();
 
+    @Value("#{target.isDone}")
     Boolean getIsDone();
 
-    User getUserLastUpdate();
+    UserInfo getUserLastUpdate();
+
+    /**
+     * Projection for {@link io.github.nhatbangle.sdp.software.entity.User}
+     */
+    interface UserInfo {
+        String getId();
+    }
 }

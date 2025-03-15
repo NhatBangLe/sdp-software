@@ -3,7 +3,6 @@ package io.github.nhatbangle.sdp.software.dto.deployment;
 import jakarta.annotation.Nullable;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 /**
  * DTO for {@link io.github.nhatbangle.sdp.software.entity.deployment.DeploymentPhase}
@@ -15,10 +14,10 @@ public record DeploymentPhaseResponse(
         long createdAtMs,
         @Nullable Long updatedAtMs,
         DeploymentPhaseType type,
-        LocalDate plannedStartDate,
-        LocalDate plannedEndDate,
-        LocalDate actualStartDate,
-        LocalDate actualEndDate,
+        String plannedStartDate,
+        String plannedEndDate,
+        String actualStartDate,
+        String actualEndDate,
         boolean isDone,
         @Nullable String userLastUpdatedId
 ) implements Serializable {

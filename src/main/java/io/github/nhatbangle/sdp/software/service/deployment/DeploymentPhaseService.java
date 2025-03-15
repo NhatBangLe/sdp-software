@@ -61,8 +61,8 @@ public class DeploymentPhaseService {
     public List<DeploymentPhaseResponse> getAllByProcessId(
             @Min(0) @NotNull Long processId
     ) {
-        var phases = repository.findAllByProcess_Id(processId);
-        return phases.stream().map(mapper::toResponse).toList();
+        var phaseStream = repository.findAllInfoByProcess_Id(processId);
+        return phaseStream.map(mapper::toResponse).toList();
     }
 
     @NotNull
