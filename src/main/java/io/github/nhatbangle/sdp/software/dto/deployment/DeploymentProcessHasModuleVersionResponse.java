@@ -11,7 +11,7 @@ public record DeploymentProcessHasModuleVersionResponse(
         Module module
 ) implements Serializable {
     /**
-     * DTO for {@link io.github.nhatbangle.sdp.software.entity.module.Module}
+     * DTO for {@link io.github.nhatbangle.sdp.software.entity.module.ModuleVersion}
      */
     public record ModuleVersion(String id, String name) implements Serializable {
     }

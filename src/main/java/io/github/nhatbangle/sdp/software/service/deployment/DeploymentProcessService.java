@@ -102,7 +102,7 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "sdp_software-deployment_process-member")
+    @Cacheable(cacheNames = "sdp_software-deployment_process-modules", key = "#processId")
     public List<DeploymentProcessHasModuleVersionResponse> getAllModuleVersions(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
