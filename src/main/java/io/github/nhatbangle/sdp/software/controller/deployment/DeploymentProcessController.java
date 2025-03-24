@@ -2,10 +2,7 @@ package io.github.nhatbangle.sdp.software.controller.deployment;
 
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessCreateRequest;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessMemberUpdateRequest;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessResponse;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.service.deployment.DeploymentProcessService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -56,7 +53,7 @@ public class DeploymentProcessController {
 
     @GetMapping("/{processId}/module-version")
     @ResponseStatus(HttpStatus.OK)
-    public List<String> getAllModuleVersions(
+    public List<DeploymentProcessHasModuleVersionResponse> getAllModuleVersions(
             @PathVariable @Min(0) Long processId
     ) {
         return service.getAllModuleVersions(processId);

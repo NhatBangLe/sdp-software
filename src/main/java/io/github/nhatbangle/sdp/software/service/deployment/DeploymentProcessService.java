@@ -3,12 +3,9 @@ package io.github.nhatbangle.sdp.software.service.deployment;
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
+import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessCreateRequest;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessResponse;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessUpdateRequest;
-import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessMemberUpdateRequest;
 import io.github.nhatbangle.sdp.software.entity.MailTemplate;
 import io.github.nhatbangle.sdp.software.entity.User;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasModuleVersionId;
@@ -105,13 +102,13 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
-    public List<String> getAllModuleVersions(
+    @Cacheable(cacheNames = "sdp_software-deployment_process-member")
+    public List<DeploymentProcessHasModuleVersionResponse> getAllModuleVersions(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
         var members = processHasModuleVersionsRepository
-                .findAllById_ProcessId(processId, Sort.by("createdAt").ascending());
-        return members.map(member -> member.getId().getVersionId()).toList();
+                .findAllByProcess_Id(processId, Sort.by("createdAt").ascending());
+        return members.map(mapper::toResponse).toList();
     }
 
     @NotNull
