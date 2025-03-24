@@ -65,6 +65,7 @@ public class SoftwareService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#softwareId")
     public SoftwareResponse getById(
             @UUID @NotNull String softwareId

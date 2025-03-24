@@ -132,6 +132,32 @@ public class SoftwareLicenseService {
     }
 
     @NotNull
+    @Transactional(readOnly = true)
+    public PagingWrapper<SoftwareLicenseResponse> getAllAlmostExpiredLicense(
+            @Min(0) int pageNumber,
+            @Min(1) @Max(50) int pageSize
+    ) {
+        var rawResult = findAllAlmostExpiredLicense().map(mapper::toResponse).toList();
+        var size = rawResult.size();
+        var totalPages = Math.ceilDiv(size, pageSize);
+        var startIndex = Math.max(0, pageNumber * pageSize);
+        var result = rawResult.subList(Math.min(startIndex, size), Math.min(startIndex + pageSize, size));
+
+        var wrapper = new PagingWrapper<SoftwareLicenseResponse>();
+        wrapper.setTotalPages(totalPages);
+        wrapper.setNumber(pageNumber);
+        wrapper.setSize(pageSize);
+        wrapper.setTotalElements((long) size);
+        wrapper.setFirst(pageNumber == 0);
+        wrapper.setLast(pageNumber == totalPages - 1);
+        wrapper.setNumberOfElements(result.size());
+        wrapper.setContent(result);
+
+        return wrapper;
+    }
+
+    @NotNull
+    @Transactional(readOnly = true)
     public Stream<SoftwareLicense> findAllAlmostExpiredLicense() {
         return repository.findAllPotentiallyExpiredLicenses(
                 false,
