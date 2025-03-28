@@ -1,10 +1,12 @@
 package io.github.nhatbangle.sdp.software.controller.deployment;
 
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.service.deployment.DeploymentPhaseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.UUID;
@@ -29,6 +31,18 @@ public class DeploymentPhaseController {
             @PathVariable @Min(0) Long processId
     ) {
         return service.getAllByProcessId(processId);
+    }
+
+    @GetMapping("/{processId}/process")
+    @ResponseStatus(HttpStatus.OK)
+    public PagingWrapper<DeploymentPhaseHistoryResponse> getHistories(
+            @PathVariable @Min(0) Long processId,
+            @RequestParam(required = false) String phaseTypeName,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
+    ) {
+        return service.getHistoriesByProcessId(processId, phaseTypeName, description, pageNumber, pageSize);
     }
 
     @GetMapping("/{phaseId}")

@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
+import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
 import io.github.nhatbangle.sdp.software.entity.Attachment;
@@ -16,6 +17,8 @@ import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentPhaseHa
 import io.github.nhatbangle.sdp.software.repository.deployment.UpdatePhaseHistoryRepository;
 import io.github.nhatbangle.sdp.software.service.AttachmentService;
 import io.github.nhatbangle.sdp.software.service.UserService;
+import jakarta.annotation.Nullable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -36,6 +39,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -59,10 +63,31 @@ public class DeploymentPhaseService {
     @NotNull
     @Transactional(readOnly = true)
     public List<DeploymentPhaseResponse> getAllByProcessId(
-            @Min(0) @NotNull Long processId
+            @Min(0) long processId
     ) {
         var phaseStream = repository.findAllInfoByProcess_Id(processId);
         return phaseStream.map(mapper::toResponse).toList();
+    }
+
+    @NotNull
+    @Transactional(readOnly = true)
+    public PagingWrapper<DeploymentPhaseHistoryResponse> getHistoriesByProcessId(
+            @Min(0) long processId,
+            @Nullable String phaseTypeName,
+            @Nullable String description,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("updatedAt").descending());
+        var page = updatePhaseHistoryRepository
+                .findByPhase_Process_IdAndPhase_Type_NameContainsIgnoreCaseAndDescriptionContainsIgnoreCase(
+                        processId,
+                        Objects.requireNonNullElse(phaseTypeName, ""),
+                        Objects.requireNonNullElse(description, ""),
+                        pageable
+                )
+                .map(mapper::toResponse);
+        return PagingWrapper.from(page);
     }
 
     @NotNull
