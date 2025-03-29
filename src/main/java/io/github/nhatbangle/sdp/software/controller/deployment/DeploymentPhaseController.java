@@ -33,7 +33,7 @@ public class DeploymentPhaseController {
         return service.getAllByProcessId(processId);
     }
 
-    @GetMapping("/{processId}/process")
+    @GetMapping("/{processId}/histories")
     @ResponseStatus(HttpStatus.OK)
     public PagingWrapper<DeploymentPhaseHistoryResponse> getHistories(
             @PathVariable @Min(0) Long processId,
