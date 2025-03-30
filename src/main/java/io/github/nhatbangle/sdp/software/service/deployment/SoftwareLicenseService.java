@@ -2,10 +2,7 @@ package io.github.nhatbangle.sdp.software.service.deployment;
 
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
-import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseCreateRequest;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseResponse;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.*;
 import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
 import io.github.nhatbangle.sdp.software.entity.SoftwareLicense;
 import io.github.nhatbangle.sdp.software.mapper.deployment.SoftwareLicenseMapper;
@@ -76,6 +73,17 @@ public class SoftwareLicenseService {
             @UUID @NotNull String phaseId
     ) throws NoSuchElementException {
         var license = repository.findInfoById(phaseId)
+                .orElseThrow(() -> notFoundHandler(phaseId));
+        return mapper.toResponse(license);
+    }
+
+    @NotNull
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#phaseId", cacheNames = "sdp_software-software_license-detail")
+    public SoftwareLicenseDetailResponse getDetailById(
+            @UUID @NotNull String phaseId
+    ) throws NoSuchElementException {
+        var license = repository.findDetailInfoById(phaseId)
                 .orElseThrow(() -> notFoundHandler(phaseId));
         return mapper.toResponse(license);
     }
@@ -159,15 +167,15 @@ public class SoftwareLicenseService {
     @NotNull
     @Transactional(readOnly = true)
     public Stream<SoftwareLicense> findAllAlmostExpiredLicense() {
+        var currentTime = Instant.now();
         return repository.findAllPotentiallyExpiredLicenses(
                 false,
                 Sort.by("startTime").ascending()
         ).filter(license -> {
             var interval = license.getExpireAlertIntervalDay();
-            var current = Instant.now();
             var endTime = license.getEndTime();
 
-            return current.plus(interval, ChronoUnit.DAYS).compareTo(endTime) >= 0;
+            return currentTime.plus(interval, ChronoUnit.DAYS).compareTo(endTime) >= 0;
         });
     }
 

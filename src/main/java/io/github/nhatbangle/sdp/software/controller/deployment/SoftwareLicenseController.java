@@ -1,9 +1,6 @@
 package io.github.nhatbangle.sdp.software.controller.deployment;
 
-import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseCreateRequest;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseResponse;
-import io.github.nhatbangle.sdp.software.dto.SoftwareLicenseUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.*;
 import io.github.nhatbangle.sdp.software.service.deployment.SoftwareLicenseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -49,6 +46,14 @@ public class SoftwareLicenseController {
             @PathVariable @UUID String licenseId
     ) {
         return service.getById(licenseId);
+    }
+
+    @GetMapping("/{licenseId}/detail")
+    @ResponseStatus(HttpStatus.OK)
+    public SoftwareLicenseDetailResponse getDetailById(
+            @PathVariable @UUID String licenseId
+    ) {
+        return service.getDetailById(licenseId);
     }
 
     @PostMapping("/{userId}")
