@@ -47,6 +47,7 @@ public class SoftwareLicense {
     private Integer expireAlertIntervalDay = 15;
 
     @NotNull
+    @Builder.Default
     @ColumnDefault("b'0'")
     @Column(name = "is_expire_alert_done", nullable = false)
     private Boolean isExpireAlertDone = false;
