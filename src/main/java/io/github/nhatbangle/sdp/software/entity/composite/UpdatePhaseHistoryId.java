@@ -2,8 +2,6 @@ package io.github.nhatbangle.sdp.software.entity.composite;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -23,7 +21,6 @@ public class UpdatePhaseHistoryId implements Serializable {
     @Serial
     private static final long serialVersionUID = 2142179798908059821L;
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "num_order", columnDefinition = "int UNSIGNED not null")
     private Long numOrder;
 
