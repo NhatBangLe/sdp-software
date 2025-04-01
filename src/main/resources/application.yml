@@ -30,3 +30,4 @@ springdoc:
 
 app:
   mail-box-queue: ${MAIL_BOX_QUEUE}
+  notification-box-queue: ${NOTIFICATION_BOX_QUEUE}

@@ -1,5 +1,8 @@
 package io.github.nhatbangle.sdp.software.constant;
 
+import lombok.Getter;
+
+@Getter
 public enum MailTemplatePlaceholder {
     CUSTOMER_NAME("${customer}"),
     DEPLOYMENT_PROCESS_ID("${process_id}"),
@@ -10,8 +13,8 @@ public enum MailTemplatePlaceholder {
     LICENSE_END_TIME("${license_end_time}"),
     ;
 
-    final String name;
-    MailTemplatePlaceholder(String name) {
-        this.name = name;
+    final String varName;
+    MailTemplatePlaceholder(String varName) {
+        this.varName = varName;
     }
 }

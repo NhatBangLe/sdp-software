@@ -10,5 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AppConfigProps {
 
     private String mailBoxQueue;
+    private String notificationBoxQueue;
 
 }

@@ -4,7 +4,7 @@ import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
-import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
+import io.github.nhatbangle.sdp.software.dto.notification.MailSendPayload;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.entity.MailTemplate;
 import io.github.nhatbangle.sdp.software.entity.User;

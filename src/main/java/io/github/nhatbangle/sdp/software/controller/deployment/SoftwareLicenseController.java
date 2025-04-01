@@ -37,7 +37,7 @@ public class SoftwareLicenseController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
             @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
-        return service.getAllAlmostExpiredLicense(pageNumber, pageSize);
+        return service.getAllPotentiallyExpiredLicense(pageNumber, pageSize);
     }
 
     @GetMapping("/{licenseId}")

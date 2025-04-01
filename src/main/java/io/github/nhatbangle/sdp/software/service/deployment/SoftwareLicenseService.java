@@ -3,11 +3,13 @@ package io.github.nhatbangle.sdp.software.service.deployment;
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import io.github.nhatbangle.sdp.software.dto.*;
-import io.github.nhatbangle.sdp.software.dto.mail.MailSendPayload;
+import io.github.nhatbangle.sdp.software.dto.notification.MailSendPayload;
+import io.github.nhatbangle.sdp.software.dto.notification.NotificationSendPayload;
 import io.github.nhatbangle.sdp.software.entity.SoftwareLicense;
 import io.github.nhatbangle.sdp.software.mapper.deployment.SoftwareLicenseMapper;
 import io.github.nhatbangle.sdp.software.repository.license.SoftwareLicenseRepository;
 import io.github.nhatbangle.sdp.software.service.MailTemplateService;
+import io.github.nhatbangle.sdp.software.service.NotificationService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -16,9 +18,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.UUID;
-import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -32,6 +31,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
@@ -48,11 +48,8 @@ public class SoftwareLicenseService {
     private final DeploymentProcessService processService;
     private final SoftwareLicenseMapper mapper;
     private final UserService userService;
-    private final RabbitTemplate rabbitTemplate;
     private final MailTemplateService mailTemplateService;
-
-    @Value("${app.mail-box-queue}")
-    private String mailBoxQueue;
+    private final NotificationService notificationService;
 
     @NotNull
     @Transactional(readOnly = true)
@@ -141,11 +138,11 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    public PagingWrapper<SoftwareLicenseResponse> getAllAlmostExpiredLicense(
+    public PagingWrapper<SoftwareLicenseResponse> getAllPotentiallyExpiredLicense(
             @Min(0) int pageNumber,
             @Min(1) @Max(50) int pageSize
     ) {
-        var rawResult = findAllAlmostExpiredLicense().map(mapper::toResponse).toList();
+        var rawResult = findAllPotentiallyExpiredLicense().map(mapper::toResponse).toList();
         var size = rawResult.size();
         var totalPages = Math.ceilDiv(size, pageSize);
         var startIndex = Math.max(0, pageNumber * pageSize);
@@ -166,7 +163,7 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    public Stream<SoftwareLicense> findAllAlmostExpiredLicense() {
+    protected Stream<SoftwareLicense> findAllPotentiallyExpiredLicense() {
         var currentTime = Instant.now();
         return repository.findAllPotentiallyExpiredLicenses(
                 false,
@@ -180,52 +177,51 @@ public class SoftwareLicenseService {
     }
 
     @Transactional
-    public void sendExpirationAlertMail() throws NoSuchElementException {
-        var licenseStream = findAllAlmostExpiredLicense();
+    public void sendExpirationAlert() throws NoSuchElementException {
+        var licenseStream = findAllPotentiallyExpiredLicense();
         var filtered = licenseStream.filter(license -> {
-            if (license.getIsExpireAlertDone()) return false;
-
-            var charset = MailTemplateService.DEFAULT_CHARSET;
             var process = license.getProcess();
+            var processCreator = process.getCreator();
             var creatorId = process.getCreator().getId();
-            try {
-                var template = mailTemplateService.findByUserIdAndType(creatorId, MailTemplateType.SOFTWARE_EXPIRE_ALERT);
-                var customer = process.getCustomer();
-                var softwareVersion = process.getSoftwareVersion();
-                var software = softwareVersion.getSoftware();
-                var content = new String(template.getContent(), charset)
-                        .replace(MailTemplatePlaceholder.CUSTOMER_NAME.name(), customer.getName())
-                        .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.name(), process.getId().toString())
-                        .replace(MailTemplatePlaceholder.SOFTWARE_NAME.name(), software.getName())
-                        .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.name(), softwareVersion.getName())
-                        .replace(MailTemplatePlaceholder.LICENSE_ID.name(), license.getId())
-                        .replace(MailTemplatePlaceholder.LICENSE_START_TIME.name(), license.getStartTime().toString())
-                        .replace(MailTemplatePlaceholder.LICENSE_END_TIME.name(), license.getEndTime().toString());
+            var customer = process.getCustomer();
+            var softwareVersion = process.getSoftwareVersion();
+            var software = softwareVersion.getSoftware();
 
-                var payload = new MailSendPayload(
+            try {
+                var charset = MailTemplateService.DEFAULT_CHARSET;
+                var template = mailTemplateService.findByUserIdAndType(creatorId, MailTemplateType.SOFTWARE_EXPIRE_ALERT);
+                var content = new String(template.getContent(), charset)
+                        .replace(MailTemplatePlaceholder.CUSTOMER_NAME.getVarName(), customer.getName())
+                        .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.getVarName(), process.getId().toString())
+                        .replace(MailTemplatePlaceholder.SOFTWARE_NAME.getVarName(), software.getName())
+                        .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.getVarName(), softwareVersion.getName())
+                        .replace(MailTemplatePlaceholder.LICENSE_ID.getVarName(), license.getId())
+                        .replace(MailTemplatePlaceholder.LICENSE_START_TIME.getVarName(), license.getStartTime().toString())
+                        .replace(MailTemplatePlaceholder.LICENSE_END_TIME.getVarName(), license.getEndTime().toString());
+                var sendingMailResult = notificationService.sendMail(new MailSendPayload(
                         template.getSubject(),
                         content.getBytes(charset),
                         charset.name(),
                         customer.getEmail()
-                );
-                rabbitTemplate.convertAndSend(mailBoxQueue, payload);
+                ));
+                if (!sendingMailResult) return false;
+
+
+                notificationService.sendNotification(new NotificationSendPayload(
+                        messageSource.getMessage("expired_license.notify.title", null, Locale.getDefault()),
+                        messageSource.getMessage("expired_license.notify.description",
+                                new Object[]{license.getId()}, Locale.getDefault()),
+                        List.of(processCreator.getId())
+                ));
 
                 license.setIsExpireAlertDone(true);
-                return true;
+                return false;
             } catch (NoSuchElementException e) {
                 log.warn("""
                         Could not send expiration alert mail.
                         Because user with id {} doesn't have expiration template.
                         """, creatorId);
                 log.debug(e.getMessage(), e);
-
-                return false;
-            } catch (AmqpException e) {
-                log.warn("""
-                        Could not send expiration alert mail.
-                        Because the AMQP exception has been thrown.
-                        """);
-                log.error(e.getMessage(), e);
 
                 return false;
             }

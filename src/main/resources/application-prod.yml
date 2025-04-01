@@ -4,5 +4,3 @@ logging:
   level:
     root: ${LOG_LEVEL_ROOT:info}
     web: ${LOG_LEVEL_WEB:info}
-app:
-  mail-box-queue: sdp-notification-mail-box
