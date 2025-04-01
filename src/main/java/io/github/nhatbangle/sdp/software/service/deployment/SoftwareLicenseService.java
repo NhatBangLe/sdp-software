@@ -180,10 +180,11 @@ public class SoftwareLicenseService {
     }
 
     @Transactional
-    public void sendExpirationAlertMail(
-            @NotNull Stream<SoftwareLicense> licenseStream
-    ) throws NoSuchElementException {
+    public void sendExpirationAlertMail() throws NoSuchElementException {
+        var licenseStream = findAllAlmostExpiredLicense();
         var filtered = licenseStream.filter(license -> {
+            if (license.getIsExpireAlertDone()) return false;
+
             var charset = MailTemplateService.DEFAULT_CHARSET;
             var process = license.getProcess();
             var creatorId = process.getCreator().getId();

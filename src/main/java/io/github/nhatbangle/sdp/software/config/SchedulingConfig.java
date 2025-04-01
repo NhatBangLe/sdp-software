@@ -15,8 +15,7 @@ public class SchedulingConfig {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void alertAlmostExpiredLicenses() {
-        var licenseStream = licenseService.findAllAlmostExpiredLicense();
-        licenseService.sendExpirationAlertMail(licenseStream);
+        licenseService.sendExpirationAlertMail();
     }
 
 }
