@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -28,12 +29,13 @@ public interface SoftwareLicenseRepository extends JpaRepository<SoftwareLicense
 
     @Query("""
             select s from SoftwareLicense s
-            where s.isExpireAlertDone = :isAlertDone
-                and s.startTime <= current_time
-                and current_time <= s.endTime
+            where :isAlertDone is null or s.isExpireAlertDone = :isAlertDone
+                and s.startTime <= :middleTime
+                and :middleTime <= s.endTime
             """)
-    Stream<SoftwareLicense> findAllPotentiallyExpiredLicenses(
-            @Param("isAlertDone") boolean isExpireAlertDone,
+    Stream<SoftwareLicense> findLicensesByIsAlertDoneAndMiddleTime(
+            @Param("isAlertDone") Boolean isExpireAlertDone,
+            @NotNull @Param("middleTime") Instant middleTime,
             @NotNull Sort sort
     );
 

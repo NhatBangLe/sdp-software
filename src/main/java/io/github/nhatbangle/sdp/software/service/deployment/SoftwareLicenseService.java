@@ -139,14 +139,16 @@ public class SoftwareLicenseService {
     @NotNull
     @Transactional(readOnly = true)
     public PagingWrapper<SoftwareLicenseResponse> getAllPotentiallyExpiredLicense(
+            Boolean isExpireAlertDone,
             @Min(0) int pageNumber,
             @Min(1) @Max(50) int pageSize
     ) {
-        var rawResult = findAllPotentiallyExpiredLicense().map(mapper::toResponse).toList();
+        var rawResult = findAllPotentiallyExpiredLicenses(isExpireAlertDone).toList();
         var size = rawResult.size();
         var totalPages = Math.ceilDiv(size, pageSize);
         var startIndex = Math.max(0, pageNumber * pageSize);
-        var result = rawResult.subList(Math.min(startIndex, size), Math.min(startIndex + pageSize, size));
+        var result = rawResult.subList(Math.min(startIndex, size), Math.min(startIndex + pageSize, size))
+                .stream().map(mapper::toResponse).toList();
 
         var wrapper = new PagingWrapper<SoftwareLicenseResponse>();
         wrapper.setTotalPages(totalPages);
@@ -163,22 +165,24 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    protected Stream<SoftwareLicense> findAllPotentiallyExpiredLicense() {
+    protected Stream<SoftwareLicense> findAllPotentiallyExpiredLicenses(Boolean isExpireAlertDone) {
         var currentTime = Instant.now();
-        return repository.findAllPotentiallyExpiredLicenses(
-                false,
+        return repository.findLicensesByIsAlertDoneAndMiddleTime(
+                isExpireAlertDone,
+                currentTime,
                 Sort.by("startTime").ascending()
         ).filter(license -> {
             var interval = license.getExpireAlertIntervalDay();
             var endTime = license.getEndTime();
+            var daysBetween = ChronoUnit.DAYS.between(currentTime, endTime);
 
-            return currentTime.plus(interval, ChronoUnit.DAYS).compareTo(endTime) >= 0;
+            return daysBetween >= 0 && daysBetween <= interval;
         });
     }
 
     @Transactional
     public void sendExpirationAlert() throws NoSuchElementException {
-        var licenseStream = findAllPotentiallyExpiredLicense();
+        var licenseStream = findAllPotentiallyExpiredLicenses(false);
         var filtered = licenseStream.filter(license -> {
             var process = license.getProcess();
             var processCreator = process.getCreator();
@@ -188,6 +192,7 @@ public class SoftwareLicenseService {
             var software = softwareVersion.getSoftware();
 
             try {
+                // send alert mail to customer
                 var charset = MailTemplateService.DEFAULT_CHARSET;
                 var template = mailTemplateService.findByUserIdAndType(creatorId, MailTemplateType.SOFTWARE_EXPIRE_ALERT);
                 var content = new String(template.getContent(), charset)
@@ -206,7 +211,7 @@ public class SoftwareLicenseService {
                 ));
                 if (!sendingMailResult) return false;
 
-
+                // send notification to admin
                 notificationService.sendNotification(new NotificationSendPayload(
                         messageSource.getMessage("expired_license.notify.title", null, Locale.getDefault()),
                         messageSource.getMessage("expired_license.notify.description",
