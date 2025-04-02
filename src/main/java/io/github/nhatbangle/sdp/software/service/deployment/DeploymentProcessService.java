@@ -91,6 +91,26 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
+    public PagingWrapper<DeploymentProcessHasSoftwareVersionResponse> getAllByCustomerId(
+            @NotNull @UUID String customerId,
+            @Nullable String softwareName,
+            @Nullable String softwareVersionName,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
+        var page = repository
+                .findByCustomer_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndSoftwareVersion_NameContainsIgnoreCase(
+                        customerId,
+                        Objects.requireNonNullElse(softwareName, ""),
+                        Objects.requireNonNullElse(softwareVersionName, ""),
+                        pageable
+                ).map(mapper::toResponse);
+        return PagingWrapper.from(page);
+    }
+
+    @NotNull
+    @Transactional(readOnly = true)
     @Cacheable(key = "#processId")
     public DeploymentProcessResponse getById(
             @Min(0) @NotNull Long processId

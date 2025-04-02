@@ -43,6 +43,24 @@ public class DeploymentProcessController {
         );
     }
 
+    @GetMapping("/{customerId}/customer")
+    @ResponseStatus(HttpStatus.OK)
+    public PagingWrapper<DeploymentProcessHasSoftwareVersionResponse> getAllByCustomerId(
+            @PathVariable @UUID String customerId,
+            @RequestParam(required = false) String softwareName,
+            @RequestParam(required = false) String softwareVersionName,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
+    ) {
+        return service.getAllByCustomerId(
+                customerId,
+                softwareName,
+                softwareVersionName,
+                pageNumber,
+                pageSize
+        );
+    }
+
     @GetMapping("/{processId}")
     @ResponseStatus(HttpStatus.OK)
     public DeploymentProcessResponse getById(

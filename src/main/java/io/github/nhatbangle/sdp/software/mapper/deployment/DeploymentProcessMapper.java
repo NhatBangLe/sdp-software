@@ -1,11 +1,14 @@
 package io.github.nhatbangle.sdp.software.mapper.deployment;
 
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessHasModuleVersionResponse;
+import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessHasSoftwareVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.deployment.DeploymentProcessResponse;
+import io.github.nhatbangle.sdp.software.dto.software.SoftwareNameAndVersionResponse;
 import io.github.nhatbangle.sdp.software.entity.Customer;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
 import io.github.nhatbangle.sdp.software.entity.software.SoftwareVersion;
 import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessHasModuleVersionInfo;
+import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessHasSoftwareVersionInfo;
 import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessInfo;
 
 public class DeploymentProcessMapper {
@@ -60,6 +63,22 @@ public class DeploymentProcessMapper {
                 entity.getProcess().getId(),
                 version,
                 module
+        );
+    }
+
+    public DeploymentProcessHasSoftwareVersionResponse toResponse(DeploymentProcessHasSoftwareVersionInfo entity) {
+        var version = entity.getSoftwareVersion();
+        var software = version.getSoftware();
+        var versionResponse = new SoftwareNameAndVersionResponse(
+                version.getId(),
+                version.getName(),
+                software.getId(),
+                software.getName()
+        );
+        return new DeploymentProcessHasSoftwareVersionResponse(
+                entity.getId(),
+                entity.getCustomer().getId(),
+                versionResponse
         );
     }
 

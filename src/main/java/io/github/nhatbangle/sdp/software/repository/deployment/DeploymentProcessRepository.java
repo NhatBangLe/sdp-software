@@ -2,10 +2,12 @@ package io.github.nhatbangle.sdp.software.repository.deployment;
 
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.entity.deployment.DeploymentProcess;
+import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessHasSoftwareVersionInfo;
 import io.github.nhatbangle.sdp.software.projection.deployment.DeploymentProcessInfo;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,5 +43,12 @@ public interface DeploymentProcessRepository extends JpaRepository<DeploymentPro
             FROM DeploymentProcess d WHERE d.id = ?1
             """)
     Optional<DeploymentProcessInfo> findInfoById(@Min(0) @NotNull Long id);
+
+    Page<DeploymentProcessHasSoftwareVersionInfo> findByCustomer_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndSoftwareVersion_NameContainsIgnoreCase(
+            @NotNull @UUID String id,
+            @NotNull String softwareName,
+            @NotNull String versionName,
+            @NotNull Pageable pageable
+    );
 
 }
