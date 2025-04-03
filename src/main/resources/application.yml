@@ -20,6 +20,9 @@ spring:
       repositories:
         enabled: false
   rabbitmq:
+    virtual-host: ${RABBITMQ_VHOST:/}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
     addresses: ${RABBITMQ_URL}
 springdoc:
   api-docs:
