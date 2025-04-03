@@ -220,14 +220,13 @@ public class SoftwareLicenseService {
                 ));
 
                 license.setIsExpireAlertDone(true);
-                return false;
+                return true;
             } catch (NoSuchElementException e) {
                 log.warn("""
                         Could not send expiration alert mail.
                         Because user with id {} doesn't have expiration template.
                         """, creatorId);
                 log.debug(e.getMessage(), e);
-
                 return false;
             }
         });
