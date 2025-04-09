@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.entity.User;
@@ -34,7 +35,7 @@ import java.util.Objects;
 @Service
 @Validated
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "sdp_software-deployment_phase_type")
+@CacheConfig(cacheNames = CacheName.DEPLOYMENT_PHASE_TYPE)
 public class DeploymentPhaseTypeService {
 
     private final MessageSource messageSource;

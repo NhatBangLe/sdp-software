@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.entity.User;
 import io.github.nhatbangle.sdp.software.exception.ServiceUnavailableException;
 import io.github.nhatbangle.sdp.software.repository.UserRepository;
@@ -18,7 +19,7 @@ import java.util.NoSuchElementException;
 @Service
 @Validated
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "sdp_software-user")
+@CacheConfig(cacheNames = CacheName.USER)
 public class UserService {
 
     private final MessageSource messageSource;
@@ -50,7 +51,7 @@ public class UserService {
      * @param userId the id of the user
      * @throws ServiceUnavailableException if the authentication service is unavailable
      */
-    @Cacheable(cacheNames = "sdp_software-user-validate", key = "#userId")
+    @Cacheable(cacheNames = CacheName.USER_VALIDATED, key = "#userId")
     public boolean validateUserId(@NotNull @UUID String userId) throws ServiceUnavailableException {
         // call to authenticate-service
         return true;

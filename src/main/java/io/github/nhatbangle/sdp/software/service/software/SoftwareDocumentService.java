@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.software;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.document.SoftwareDocumentCreateRequest;
@@ -38,7 +39,7 @@ import java.util.Objects;
 
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-software_document")
+@CacheConfig(cacheNames = CacheName.SOFTWARE_DOCUMENT)
 @RequiredArgsConstructor
 public class SoftwareDocumentService {
 

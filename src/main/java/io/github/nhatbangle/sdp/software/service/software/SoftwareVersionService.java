@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.software;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.*;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareNameAndVersionResponse;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareVersionCreateRequest;
@@ -30,7 +31,7 @@ import java.util.Objects;
 
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-software_version")
+@CacheConfig(cacheNames = CacheName.SOFTWARE_VERSION)
 @RequiredArgsConstructor
 public class SoftwareVersionService {
 

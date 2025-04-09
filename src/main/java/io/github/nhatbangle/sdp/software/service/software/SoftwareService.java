@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.software;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.software.SoftwareResponse;
@@ -35,7 +36,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-software")
+@CacheConfig(cacheNames = CacheName.SOFTWARE)
 @RequiredArgsConstructor
 public class SoftwareService {
 

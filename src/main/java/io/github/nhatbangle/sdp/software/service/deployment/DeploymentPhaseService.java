@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
@@ -45,7 +46,7 @@ import java.util.Objects;
 @Service
 @Validated
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "sdp_software-deployment_phase")
+@CacheConfig(cacheNames = CacheName.DEPLOYMENT_PHASE)
 public class DeploymentPhaseService {
 
     private final DeploymentPhaseHasAttachmentRepository phaseAtmRepository;
@@ -112,7 +113,7 @@ public class DeploymentPhaseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "sdp_software-deployment_phase-member", key = "#phaseId")
+    @Cacheable(cacheNames = CacheName.DEPLOYMENT_PHASE_MEMBER, key = "#phaseId")
     public List<String> getAllMembers(
             @UUID @NotNull String phaseId
     ) throws NoSuchElementException {
@@ -219,7 +220,7 @@ public class DeploymentPhaseService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "sdp_software-deployment_phase-member", key = "#phaseId")
+    @CacheEvict(cacheNames = CacheName.DEPLOYMENT_PHASE_MEMBER, key = "#phaseId")
     public void updateMember(
             @UUID @NotNull String phaseId,
             @NotNull @Valid DeploymentPhaseMemberUpdateRequest request

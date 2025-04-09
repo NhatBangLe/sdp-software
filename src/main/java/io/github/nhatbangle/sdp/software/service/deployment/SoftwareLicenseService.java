@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import io.github.nhatbangle.sdp.software.dto.*;
@@ -10,6 +11,7 @@ import io.github.nhatbangle.sdp.software.mapper.deployment.SoftwareLicenseMapper
 import io.github.nhatbangle.sdp.software.repository.license.SoftwareLicenseRepository;
 import io.github.nhatbangle.sdp.software.service.MailTemplateService;
 import io.github.nhatbangle.sdp.software.service.NotificationService;
+import io.github.nhatbangle.sdp.software.service.RedisCacheService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -40,7 +42,7 @@ import java.util.stream.Stream;
 @Service
 @Validated
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "sdp_software-software_license")
+@CacheConfig(cacheNames = CacheName.LICENSE)
 public class SoftwareLicenseService {
 
     private final MessageSource messageSource;
@@ -50,6 +52,7 @@ public class SoftwareLicenseService {
     private final UserService userService;
     private final MailTemplateService mailTemplateService;
     private final NotificationService notificationService;
+    private final RedisCacheService redisCacheService;
 
     @NotNull
     @Transactional(readOnly = true)
@@ -76,12 +79,12 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(key = "#phaseId", cacheNames = "sdp_software-software_license-detail")
+    @Cacheable(key = "#licenseId", cacheNames = CacheName.LICENSE_DETAIL)
     public SoftwareLicenseDetailResponse getDetailById(
-            @UUID @NotNull String phaseId
+            @UUID @NotNull String licenseId
     ) throws NoSuchElementException {
-        var license = repository.findDetailInfoById(phaseId)
-                .orElseThrow(() -> notFoundHandler(phaseId));
+        var license = repository.findDetailInfoById(licenseId)
+                .orElseThrow(() -> notFoundHandler(licenseId));
         return mapper.toResponse(license);
     }
 
@@ -108,7 +111,7 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional
-    @CachePut(key = "#licenseId")
+    @CachePut(key = "#licenseId", cacheNames = {CacheName.LICENSE, CacheName.LICENSE_DETAIL})
     public SoftwareLicenseResponse updateById(
             @UUID @NotNull String licenseId,
             @NotNull @Valid SoftwareLicenseUpdateRequest request
@@ -121,7 +124,7 @@ public class SoftwareLicenseService {
         return mapper.toResponse(savedLicense);
     }
 
-    @CacheEvict(key = "#licenseId")
+    @CacheEvict(key = "#licenseId", cacheNames = {CacheName.LICENSE, CacheName.LICENSE_DETAIL})
     public void deleteById(
             @UUID @NotNull String licenseId
     ) throws NoSuchElementException {
@@ -220,6 +223,7 @@ public class SoftwareLicenseService {
                 ));
 
                 license.setIsExpireAlertDone(true);
+                redisCacheService.invalidateKey("sdp_software-software_license-detail", license.getId());
                 return true;
             } catch (NoSuchElementException e) {
                 log.warn("""

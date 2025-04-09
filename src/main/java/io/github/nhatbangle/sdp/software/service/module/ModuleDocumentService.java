@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.module;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.document.*;
@@ -36,7 +37,7 @@ import java.util.Objects;
 
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-module_document")
+@CacheConfig(cacheNames = CacheName.MODULE_DOCUMENT)
 @RequiredArgsConstructor
 public class ModuleDocumentService {
 

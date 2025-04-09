@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.deployment;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.constant.DeploymentProcessStatus;
 import io.github.nhatbangle.sdp.software.constant.MailTemplatePlaceholder;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
@@ -50,7 +51,7 @@ import java.util.*;
 @Service
 @Validated
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "sdp_software-deployment_process")
+@CacheConfig(cacheNames = CacheName.DEPLOYMENT_PROCESS)
 public class DeploymentProcessService {
 
     private final MessageSource messageSource;
@@ -122,7 +123,7 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "sdp_software-deployment_process-modules", key = "#processId")
+    @Cacheable(cacheNames = CacheName.DEPLOYMENT_PROCESS_MODULE, key = "#processId")
     public List<DeploymentProcessHasModuleVersionResponse> getAllModuleVersions(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
@@ -133,7 +134,7 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
+    @Cacheable(cacheNames = CacheName.DEPLOYMENT_PROCESS_MEMBER, key = "#processId")
     public List<String> getAllMembers(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
@@ -202,7 +203,7 @@ public class DeploymentProcessService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "sdp_software-deployment_process-member", key = "#processId")
+    @CacheEvict(cacheNames = CacheName.DEPLOYMENT_PROCESS_MEMBER, key = "#processId")
     public void updateMember(
             @Min(0) @NotNull Long processId,
             @NotNull @Valid DeploymentProcessMemberUpdateRequest request

@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.customer.CustomerCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.customer.CustomerResponse;
 import io.github.nhatbangle.sdp.software.dto.customer.CustomerUpdateRequest;
@@ -31,7 +32,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-customer")
+@CacheConfig(cacheNames = CacheName.CUSTOMER)
 @RequiredArgsConstructor
 public class CustomerService {
 

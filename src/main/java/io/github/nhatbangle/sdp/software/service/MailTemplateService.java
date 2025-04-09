@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import io.github.nhatbangle.sdp.software.dto.mail.MailTemplateCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.mail.MailTemplateResponse;
@@ -32,7 +33,7 @@ import java.util.NoSuchElementException;
 @Slf4j
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-mail_template")
+@CacheConfig(cacheNames = CacheName.MAIL_TEMPLATE)
 @RequiredArgsConstructor
 public class MailTemplateService {
 

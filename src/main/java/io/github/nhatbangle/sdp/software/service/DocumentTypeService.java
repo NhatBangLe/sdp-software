@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.*;
 import io.github.nhatbangle.sdp.software.dto.document.DocumentTypeCreateRequest;
 import io.github.nhatbangle.sdp.software.dto.document.DocumentTypeResponse;
@@ -32,7 +33,7 @@ import java.util.Objects;
 
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-document_type")
+@CacheConfig(cacheNames = CacheName.DOCUMENT_TYPE)
 @RequiredArgsConstructor
 public class DocumentTypeService {
 

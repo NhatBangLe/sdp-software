@@ -1,5 +1,6 @@
 package io.github.nhatbangle.sdp.software.service.module;
 
+import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.module.*;
 import io.github.nhatbangle.sdp.software.entity.module.ModuleVersion;
@@ -29,7 +30,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @Validated
-@CacheConfig(cacheNames = "sdp_software-module_version")
+@CacheConfig(cacheNames = CacheName.MODULE_VERSION)
 @RequiredArgsConstructor
 public class ModuleVersionService {
 
