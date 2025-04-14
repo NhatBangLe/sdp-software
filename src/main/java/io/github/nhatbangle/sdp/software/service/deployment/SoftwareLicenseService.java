@@ -106,7 +106,38 @@ public class SoftwareLicenseService {
                 .process(process)
                 .creator(user)
                 .build());
+
+        sendAlertMail(license.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
+
         return mapper.toResponse(license);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean sendAlertMail(@UUID @NotNull String licenseId,
+                                         @NotNull MailTemplateType type) {
+        var license = repository.findDetailInfoById(licenseId).orElseThrow(() -> notFoundHandler(licenseId));
+        var creator = license.getCreator();
+        var process = license.getProcess();
+        var customer = process.getCustomer();
+        var softVer = process.getSoftwareVersion();
+        var software = softVer.getSoftware();
+
+        var charset = MailTemplateService.DEFAULT_CHARSET;
+        var template = mailTemplateService.findByUserIdAndType(creator.getId(), type);
+        var content = new String(template.getContent(), charset)
+                .replace(MailTemplatePlaceholder.CUSTOMER_NAME.getVarName(), customer.getName())
+                .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.getVarName(), process.getId().toString())
+                .replace(MailTemplatePlaceholder.SOFTWARE_NAME.getVarName(), software.getName())
+                .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.getVarName(), softVer.getName())
+                .replace(MailTemplatePlaceholder.LICENSE_ID.getVarName(), license.getId())
+                .replace(MailTemplatePlaceholder.LICENSE_START_TIME.getVarName(), license.getStartTime().toString())
+                .replace(MailTemplatePlaceholder.LICENSE_END_TIME.getVarName(), license.getEndTime().toString());
+        return notificationService.sendMail(new MailSendPayload(
+                template.getSubject(),
+                content.getBytes(charset),
+                charset.name(),
+                customer.getEmail()
+        ));
     }
 
     @NotNull
@@ -190,28 +221,11 @@ public class SoftwareLicenseService {
             var process = license.getProcess();
             var processCreator = process.getCreator();
             var creatorId = process.getCreator().getId();
-            var customer = process.getCustomer();
-            var softwareVersion = process.getSoftwareVersion();
-            var software = softwareVersion.getSoftware();
 
             try {
                 // send alert mail to customer
-                var charset = MailTemplateService.DEFAULT_CHARSET;
-                var template = mailTemplateService.findByUserIdAndType(creatorId, MailTemplateType.SOFTWARE_EXPIRE_ALERT);
-                var content = new String(template.getContent(), charset)
-                        .replace(MailTemplatePlaceholder.CUSTOMER_NAME.getVarName(), customer.getName())
-                        .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.getVarName(), process.getId().toString())
-                        .replace(MailTemplatePlaceholder.SOFTWARE_NAME.getVarName(), software.getName())
-                        .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.getVarName(), softwareVersion.getName())
-                        .replace(MailTemplatePlaceholder.LICENSE_ID.getVarName(), license.getId())
-                        .replace(MailTemplatePlaceholder.LICENSE_START_TIME.getVarName(), license.getStartTime().toString())
-                        .replace(MailTemplatePlaceholder.LICENSE_END_TIME.getVarName(), license.getEndTime().toString());
-                var sendingMailResult = notificationService.sendMail(new MailSendPayload(
-                        template.getSubject(),
-                        content.getBytes(charset),
-                        charset.name(),
-                        customer.getEmail()
-                ));
+                var sendingMailResult = sendAlertMail(license.getId(),
+                        MailTemplateType.SOFTWARE_EXPIRE_ALERT);
                 if (!sendingMailResult) return false;
 
                 // send notification to admin
@@ -223,12 +237,12 @@ public class SoftwareLicenseService {
                 ));
 
                 license.setIsExpireAlertDone(true);
-                redisCacheService.invalidateKey("sdp_software-software_license-detail", license.getId());
+                redisCacheService.invalidateKey(CacheName.LICENSE_DETAIL, license.getId());
                 return true;
             } catch (NoSuchElementException e) {
                 log.warn("""
                         Could not send expiration alert mail.
-                        Because user with id {} doesn't have expiration template.
+                        Because the user with id {} doesn't have expiration template.
                         """, creatorId);
                 log.debug(e.getMessage(), e);
                 return false;
