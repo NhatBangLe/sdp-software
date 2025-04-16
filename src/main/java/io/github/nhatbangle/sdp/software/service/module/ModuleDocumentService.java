@@ -177,9 +177,8 @@ public class ModuleDocumentService {
     @CacheEvict(key = "#documentId")
     public void deleteById(
             @UUID @NotNull String documentId
-    ) throws NoSuchElementException {
-        var document = findById(documentId);
-        repository.delete(document);
+    ) {
+        repository.deleteById(documentId);
     }
 
     @NotNull

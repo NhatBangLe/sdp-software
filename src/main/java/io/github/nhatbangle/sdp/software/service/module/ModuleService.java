@@ -39,8 +39,8 @@ public class ModuleService {
 
     private final MessageSource messageSource;
     private final SoftwareVersionService softwareVersionService;
-    private final ModuleRepository moduleRepository;
-    private final ModuleMapper moduleMapper;
+    private final ModuleRepository repository;
+    private final ModuleMapper mapper;
 
     @NotNull
     @Transactional(readOnly = true)
@@ -51,13 +51,13 @@ public class ModuleService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var page = moduleRepository
+        var page = repository
                 .findAllBySoftwareVersion_IdAndNameContainsIgnoreCase(
                         softwareVersionId,
                         Objects.requireNonNullElse(name, ""),
                         pageable
                 )
-                .map(moduleMapper::toResponse);
+                .map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
@@ -67,9 +67,9 @@ public class ModuleService {
     public ModuleResponse getById(
             @UUID @NotNull String moduleId
     ) throws NoSuchElementException {
-        var module = moduleRepository.findInfoById(moduleId)
+        var module = repository.findInfoById(moduleId)
                 .orElseThrow(() -> notFoundHandler(moduleId));
-        return moduleMapper.toResponse(module);
+        return mapper.toResponse(module);
     }
 
     @NotNull
@@ -80,12 +80,12 @@ public class ModuleService {
             @NotNull @Valid ModuleCreateRequest request
     ) throws IllegalArgumentException {
         var softwareVersion = softwareVersionService.findById(softwareVersionId);
-        var module = moduleRepository.save(Module.builder()
+        var module = repository.save(Module.builder()
                 .name(request.name())
                 .description(request.description())
                 .softwareVersion(softwareVersion)
                 .build());
-        return moduleMapper.toResponse(module);
+        return mapper.toResponse(module);
     }
 
     @NotNull
@@ -99,22 +99,21 @@ public class ModuleService {
         module.setName(request.name());
         module.setDescription(request.description());
 
-        var savedModule = moduleRepository.save(module);
-        return moduleMapper.toResponse(savedModule);
+        var savedModule = repository.save(module);
+        return mapper.toResponse(savedModule);
     }
 
     @CacheEvict(key = "#moduleId")
     public void deleteById(
             @UUID @NotNull String moduleId
-    ) throws NoSuchElementException {
-        var module = findById(moduleId);
-        moduleRepository.delete(module);
+    ) {
+        repository.deleteById(moduleId);
     }
 
     @NotNull
     public Module findById(@UUID @NotNull String moduleId)
             throws NoSuchElementException {
-        return moduleRepository.findById(moduleId)
+        return repository.findById(moduleId)
                 .orElseThrow(() -> notFoundHandler(moduleId));
     }
 

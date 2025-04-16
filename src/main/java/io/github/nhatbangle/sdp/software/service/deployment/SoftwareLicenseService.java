@@ -107,7 +107,7 @@ public class SoftwareLicenseService {
                 .creator(user)
                 .build());
 
-        sendAlertMail(license.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
+        sendAlertMail(license.getId(), MailTemplateType.NEW_LICENSE_CREATED_ALERT);
 
         return mapper.toResponse(license);
     }
@@ -159,8 +159,7 @@ public class SoftwareLicenseService {
     public void deleteById(
             @UUID @NotNull String licenseId
     ) throws NoSuchElementException {
-        var phase = findById(licenseId);
-        repository.delete(phase);
+        repository.deleteById(licenseId);
     }
 
     @NotNull

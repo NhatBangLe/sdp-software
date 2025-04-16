@@ -41,7 +41,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -73,7 +72,8 @@ public class DeploymentProcessService {
     @NotNull
     @Transactional(readOnly = true)
     public PagingWrapper<DeploymentProcessResponse> getAll(
-            @Nullable String softwareVersionName,
+            @UUID @NotNull String creatorId,
+            @Nullable String softwareName,
             @Nullable String customerName,
             @Nullable DeploymentProcessStatus status,
             int pageNumber,
@@ -81,8 +81,9 @@ public class DeploymentProcessService {
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
         var page = repository
-                .findAllBySoftwareVersion_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
-                        Objects.requireNonNullElse(softwareVersionName, ""),
+                .findAllByCreator_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
+                        creatorId,
+                        Objects.requireNonNullElse(softwareName, ""),
                         Objects.requireNonNullElse(customerName, ""),
                         status,
                         pageable
@@ -177,7 +178,6 @@ public class DeploymentProcessService {
         return mapper.toResponse(process);
     }
 
-    @Async
     @Transactional(readOnly = true)
     protected void sendProcessDoneAlertMail(
             @NotNull MailTemplate template,
@@ -250,8 +250,7 @@ public class DeploymentProcessService {
     public void deleteById(
             @Min(0) @NotNull Long processId
     ) throws NoSuchElementException {
-        var process = findById(processId);
-        repository.delete(process);
+        repository.deleteById(processId);
     }
 
     @NotNull

@@ -279,8 +279,7 @@ public class DeploymentPhaseService {
     public void deleteById(
             @UUID @NotNull String phaseId
     ) throws NoSuchElementException {
-        var phase = findById(phaseId);
-        repository.delete(phase);
+        repository.deleteById(phaseId);
     }
 
     @NotNull

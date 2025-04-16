@@ -38,8 +38,8 @@ public class CustomerService {
 
     private final MessageSource messageSource;
     private final UserService userService;
-    private final CustomerRepository customerRepository;
-    private final CustomerMapper customerMapper;
+    private final CustomerRepository repository;
+    private final CustomerMapper mapper;
     private final UserRepository userRepository;
 
     @NotNull
@@ -51,13 +51,13 @@ public class CustomerService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var page = customerRepository
+        var page = repository
                 .findAllByNameContainsIgnoreCaseAndEmailStartsWithIgnoreCase(
                         Objects.requireNonNullElse(name, ""),
                         Objects.requireNonNullElse(email, ""),
                         pageable
                 )
-                .map(customerMapper::toResponse);
+                .map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
@@ -67,9 +67,9 @@ public class CustomerService {
     public CustomerResponse getById(
             @UUID @NotNull String customerId
     ) throws NoSuchElementException {
-        var customer = customerRepository.findInfoById(customerId)
+        var customer = repository.findInfoById(customerId)
                 .orElseThrow(() -> notFoundHandler(customerId));
-        return customerMapper.toResponse(customer);
+        return mapper.toResponse(customer);
     }
 
     @NotNull
@@ -85,12 +85,12 @@ public class CustomerService {
             return User.builder().id(userId).build();
         });
 
-        var customer = customerRepository.save(Customer.builder()
+        var customer = repository.save(Customer.builder()
                 .name(request.name())
                 .email(request.email())
                 .creator(user)
                 .build());
-        return customerMapper.toResponse(customer);
+        return mapper.toResponse(customer);
     }
 
     @NotNull
@@ -104,22 +104,21 @@ public class CustomerService {
         customer.setName(request.name());
         customer.setEmail(request.email());
 
-        var savedCustomer = customerRepository.save(customer);
-        return customerMapper.toResponse(savedCustomer);
+        var savedCustomer = repository.save(customer);
+        return mapper.toResponse(savedCustomer);
     }
 
     @CacheEvict(key = "#customerId")
     public void deleteById(
             @UUID @NotNull String customerId
-    ) throws NoSuchElementException {
-        var customer = findById(customerId);
-        customerRepository.delete(customer);
+    ) {
+        repository.deleteById(customerId);
     }
 
     @NotNull
     public Customer findById(@UUID @NotNull String customerId)
             throws NoSuchElementException {
-        return customerRepository.findById(customerId)
+        return repository.findById(customerId)
                 .orElseThrow(() -> notFoundHandler(customerId));
     }
 

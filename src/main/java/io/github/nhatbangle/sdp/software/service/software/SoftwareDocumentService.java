@@ -44,8 +44,8 @@ import java.util.Objects;
 public class SoftwareDocumentService {
 
     private final MessageSource messageSource;
-    private final SoftwareDocumentRepository softwareDocumentRepository;
-    private final SoftwareDocumentMapper softwareDocumentMapper;
+    private final SoftwareDocumentRepository repository;
+    private final SoftwareDocumentMapper mapper;
     private final SoftwareVersionService softwareVersionService;
     private final DocumentTypeService documentTypeService;
     private final SoftwareDocumentHasAttachmentRepository docAtmRepository;
@@ -61,13 +61,13 @@ public class SoftwareDocumentService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize);
-        var page = softwareDocumentRepository
+        var page = repository
                 .findAllByVersion_IdAndType_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
                         softwareVersionId,
                         Objects.requireNonNullElse(documentTypeName, ""),
                         Objects.requireNonNullElse(documentName, ""),
                         pageable
-                ).map(softwareDocumentMapper::toResponse);
+                ).map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
@@ -77,9 +77,9 @@ public class SoftwareDocumentService {
     public SoftwareDocumentResponse getById(
             @UUID @NotNull String documentId
     ) throws NoSuchElementException {
-        var document = softwareDocumentRepository.findInfoById(documentId)
+        var document = repository.findInfoById(documentId)
                 .orElseThrow(() -> notFoundHandler(documentId));
-        return softwareDocumentMapper.toResponse(document);
+        return mapper.toResponse(document);
     }
 
     @NotNull
@@ -101,7 +101,7 @@ public class SoftwareDocumentService {
         var version = softwareVersionService.findById(versionId);
         var type = documentTypeService.findById(request.typeId());
 
-        var document = softwareDocumentRepository.save(SoftwareDocument.builder()
+        var document = repository.save(SoftwareDocument.builder()
                 .name(request.name())
                 .description(request.description())
                 .version(version)
@@ -123,7 +123,7 @@ public class SoftwareDocumentService {
             }).toList();
             docAtmRepository.saveAll(attachments);
         }
-        return softwareDocumentMapper.toResponse(document);
+        return mapper.toResponse(document);
     }
 
     @NotNull
@@ -137,8 +137,8 @@ public class SoftwareDocumentService {
         document.setName(request.name());
         document.setDescription(request.description());
 
-        var savedDocument = softwareDocumentRepository.save(document);
-        return softwareDocumentMapper.toResponse(savedDocument);
+        var savedDocument = repository.save(document);
+        return mapper.toResponse(savedDocument);
     }
 
     @Transactional
@@ -179,15 +179,14 @@ public class SoftwareDocumentService {
     @CacheEvict(key = "#documentId")
     public void deleteById(
             @UUID @NotNull String documentId
-    ) throws NoSuchElementException {
-        var document = findById(documentId);
-        softwareDocumentRepository.delete(document);
+    ) {
+        repository.deleteById(documentId);
     }
 
     @NotNull
     public SoftwareDocument findById(@UUID @NotNull String documentId)
             throws NoSuchElementException {
-        return softwareDocumentRepository.findById(documentId)
+        return repository.findById(documentId)
                 .orElseThrow(() -> notFoundHandler(documentId));
     }
 

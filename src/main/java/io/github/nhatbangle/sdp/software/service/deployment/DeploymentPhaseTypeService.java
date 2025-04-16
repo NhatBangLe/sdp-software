@@ -111,9 +111,8 @@ public class DeploymentPhaseTypeService {
     @CacheEvict(key = "#typeId")
     public void deleteById(
             @UUID @NotNull String typeId
-    ) throws NoSuchElementException {
-        var type = findById(typeId);
-        repository.delete(type);
+    ) {
+        repository.deleteById(typeId);
     }
 
     @NotNull

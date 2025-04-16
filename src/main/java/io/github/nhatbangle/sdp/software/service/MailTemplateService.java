@@ -120,8 +120,7 @@ public class MailTemplateService {
     public void deleteById(
             @UUID @NotNull String templateId
     ) throws NoSuchElementException {
-        var customer = findById(templateId);
-        repository.delete(customer);
+        repository.deleteById(templateId);
     }
 
     @NotNull

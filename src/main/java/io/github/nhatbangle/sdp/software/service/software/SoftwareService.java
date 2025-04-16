@@ -40,9 +40,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class SoftwareService {
 
-    private final SoftwareRepository softwareRepository;
+    private final SoftwareRepository repository;
     private final MessageSource messageSource;
-    private final SoftwareMapper softwareMapper;
+    private final SoftwareMapper mapper;
     private final UserService userService;
     private final UserRepository userRepository;
 
@@ -55,13 +55,13 @@ public class SoftwareService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var page = softwareRepository
+        var page = repository
                 .findAllByUser_IdAndNameContainsIgnoreCase(
                         userId,
                         Objects.requireNonNullElse(name, ""),
                         pageable
                 )
-                .map(softwareMapper::toResponse);
+                .map(mapper::toResponse);
         return PagingWrapper.from(page);
     }
 
@@ -71,9 +71,9 @@ public class SoftwareService {
     public SoftwareResponse getById(
             @UUID @NotNull String softwareId
     ) throws NoSuchElementException {
-        var software = softwareRepository.findInfoById(softwareId)
+        var software = repository.findInfoById(softwareId)
                 .orElseThrow(() -> notFoundHandler(softwareId));
-        return softwareMapper.toResponse(software);
+        return mapper.toResponse(software);
     }
 
     @NotNull
@@ -89,12 +89,12 @@ public class SoftwareService {
             return User.builder().id(userId).build();
         });
 
-        var software = softwareRepository.save(Software.builder()
+        var software = repository.save(Software.builder()
                 .name(request.name())
                 .description(request.description())
                 .user(user)
                 .build());
-        return softwareMapper.toResponse(software);
+        return mapper.toResponse(software);
     }
 
     @NotNull
@@ -108,22 +108,21 @@ public class SoftwareService {
         software.setName(request.name());
         software.setDescription(request.description());
 
-        var savedSoftware = softwareRepository.save(software);
-        return softwareMapper.toResponse(savedSoftware);
+        var savedSoftware = repository.save(software);
+        return mapper.toResponse(savedSoftware);
     }
 
     @CacheEvict(key = "#softwareId")
     public void deleteById(
             @UUID @NotNull String softwareId
-    ) throws NoSuchElementException {
-        var software = findById(softwareId);
-        softwareRepository.delete(software);
+    ) {
+        repository.deleteById(softwareId);
     }
 
     @NotNull
     public Software findById(@UUID @NotNull String softwareId)
             throws NoSuchElementException {
-        return softwareRepository.findById(softwareId)
+        return repository.findById(softwareId)
                 .orElseThrow(() -> notFoundHandler(softwareId));
     }
 

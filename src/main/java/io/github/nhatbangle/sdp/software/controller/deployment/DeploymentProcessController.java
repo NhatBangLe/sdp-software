@@ -25,17 +25,19 @@ public class DeploymentProcessController {
 
     private final DeploymentProcessService service;
 
-    @GetMapping
+    @GetMapping("/{userId}/creator")
     @ResponseStatus(HttpStatus.OK)
     public PagingWrapper<DeploymentProcessResponse> getAllByVersionIdOrCustomerId(
-            @RequestParam(required = false) String softwareVersionName,
+            @PathVariable @UUID String userId,
+            @RequestParam(required = false) String softwareName,
             @RequestParam(required = false) String customerName,
             @RequestParam(required = false) DeploymentProcessStatus status,
             @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
             @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
         return service.getAll(
-                softwareVersionName,
+                userId,
+                softwareName,
                 customerName,
                 status,
                 pageNumber,

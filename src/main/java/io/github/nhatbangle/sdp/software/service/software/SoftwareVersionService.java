@@ -118,25 +118,24 @@ public class SoftwareVersionService {
 
     @NotNull
     @Transactional
-    @CachePut(key = "#softwareId")
+    @CachePut(key = "#versionId")
     public SoftwareVersionResponse updateById(
-            @UUID @NotNull String softwareId,
+            @UUID @NotNull String versionId,
             @NotNull @Valid SoftwareVersionUpdateRequest request
     ) throws NoSuchElementException {
-        var software = findById(softwareId);
-        software.setName(request.name());
-        software.setDescription(request.description());
+        var version = findById(versionId);
+        version.setName(request.name());
+        version.setDescription(request.description());
 
-        var savedSoftware = repository.save(software);
-        return mapper.toResponse(savedSoftware);
+        var savedVersion = repository.save(version);
+        return mapper.toResponse(savedVersion);
     }
 
-    @CacheEvict(key = "#softwareId")
+    @CacheEvict(key = "#versionId")
     public void deleteById(
-            @UUID @NotNull String softwareId
-    ) throws NoSuchElementException {
-        var software = findById(softwareId);
-        repository.delete(software);
+            @UUID @NotNull String versionId
+    ) {
+        repository.deleteById(versionId);
     }
 
     @NotNull

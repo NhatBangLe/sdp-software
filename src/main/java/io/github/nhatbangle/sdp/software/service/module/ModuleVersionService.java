@@ -36,7 +36,7 @@ public class ModuleVersionService {
 
     private final MessageSource messageSource;
     private final ModuleVersionMapper mapper;
-    private final ModuleVersionRepository moduleVersionRepository;
+    private final ModuleVersionRepository repository;
     private final ModuleService moduleService;
 
     @NotNull
@@ -49,7 +49,7 @@ public class ModuleVersionService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize);
-        var page = moduleVersionRepository
+        var page = repository
                 .findAllByModule_SoftwareVersion_IdAndModule_NameContainsIgnoreCaseAndNameContainsIgnoreCase(
                         softwareVersionId,
                         Objects.requireNonNullElse(moduleName, ""),
@@ -79,7 +79,7 @@ public class ModuleVersionService {
             int pageSize
     ) {
         var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
-        var page = moduleVersionRepository
+        var page = repository
                 .findAllByModule_IdAndNameContainsIgnoreCase(
                         moduleId,
                         Objects.requireNonNullElse(name, ""),
@@ -95,7 +95,7 @@ public class ModuleVersionService {
     public ModuleVersionResponse getById(
             @UUID @NotNull String versionId
     ) throws NoSuchElementException {
-        var version = moduleVersionRepository.findInfoById(versionId)
+        var version = repository.findInfoById(versionId)
                 .orElseThrow(() -> notFoundHandler(versionId));
         return mapper.toResponse(version);
     }
@@ -108,7 +108,7 @@ public class ModuleVersionService {
             @NotNull @Valid ModuleVersionCreateRequest request
     ) throws IllegalArgumentException {
         var module = moduleService.findById(moduleId);
-        var version = moduleVersionRepository.save(ModuleVersion.builder()
+        var version = repository.save(ModuleVersion.builder()
                 .name(request.name())
                 .description(request.description())
                 .module(module)
@@ -127,22 +127,21 @@ public class ModuleVersionService {
         version.setName(request.name());
         version.setDescription(request.description());
 
-        var savedVersion = moduleVersionRepository.save(version);
+        var savedVersion = repository.save(version);
         return mapper.toResponse(savedVersion);
     }
 
-    @CacheEvict(key = "#moduleId")
+    @CacheEvict(key = "#versionId")
     public void deleteById(
-            @UUID @NotNull String moduleId
-    ) throws NoSuchElementException {
-        var module = findById(moduleId);
-        moduleVersionRepository.delete(module);
+            @UUID @NotNull String versionId
+    ) {
+        repository.deleteById(versionId);
     }
 
     @NotNull
     public ModuleVersion findById(@UUID @NotNull String versionId)
             throws NoSuchElementException {
-        return moduleVersionRepository.findById(versionId)
+        return repository.findById(versionId)
                 .orElseThrow(() -> notFoundHandler(versionId));
     }
 

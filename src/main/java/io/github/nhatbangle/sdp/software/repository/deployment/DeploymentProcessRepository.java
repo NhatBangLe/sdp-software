@@ -25,12 +25,14 @@ public interface DeploymentProcessRepository extends JpaRepository<DeploymentPro
                 d.id, d.status, d.createdAt, d.updatedAt,
                 d.softwareVersion.software.name, d.softwareVersion.name, d.customer.name)
             FROM DeploymentProcess d
-            WHERE upper(d.softwareVersion.name) LIKE upper(concat('%', :versionName, '%'))
+            WHERE d.creator.id = :creatorId
+                    AND upper(d.softwareVersion.software.name) LIKE upper(concat('%', :softwareName, '%'))
                     AND upper(d.customer.name) LIKE upper(concat('%', :customerName, '%'))
                     AND (:status is null OR d.status = :status)
             """)
-    Page<DeploymentProcessInfo> findAllBySoftwareVersion_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
-            @NotNull @Param("versionName") String softwareVersionName,
+    Page<DeploymentProcessInfo> findAllByCreator_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
+            @NotNull @UUID @Param("creatorId") String creatorId,
+            @NotNull @Param("softwareName") String softwareName,
             @NotNull @Param("customerName") String customerName,
             @Nullable @Param("status") DeploymentProcessStatus status,
             @NotNull Pageable pageable
