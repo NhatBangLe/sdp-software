@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @Validated
 @RestController
 @Tag(name = "Deployment Process")
@@ -27,7 +28,7 @@ public class DeploymentProcessController {
 
     @GetMapping("/{userId}/creator")
     @ResponseStatus(HttpStatus.OK)
-    public PagingWrapper<DeploymentProcessResponse> getAllByVersionIdOrCustomerId(
+    public PagingWrapper<DeploymentProcessResponse> getAllByUserId(
             @PathVariable @UUID String userId,
             @RequestParam(required = false) String softwareName,
             @RequestParam(required = false) String customerName,
@@ -35,8 +36,28 @@ public class DeploymentProcessController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
             @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
     ) {
-        return service.getAll(
+        return service.getAllByCreatorId(
                 userId,
+                softwareName,
+                customerName,
+                status,
+                pageNumber,
+                pageSize
+        );
+    }
+
+    @GetMapping("/{memberId}/join")
+    @ResponseStatus(HttpStatus.OK)
+    public PagingWrapper<DeploymentProcessResponse> getAllByMemberId(
+            @PathVariable @UUID String memberId,
+            @RequestParam(required = false) String softwareName,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) DeploymentProcessStatus status,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) int pageNumber,
+            @RequestParam(required = false, defaultValue = "6") @Min(1) @Max(50) int pageSize
+    ) {
+        return service.getAllByMemberId(
+                memberId,
                 softwareName,
                 customerName,
                 status,

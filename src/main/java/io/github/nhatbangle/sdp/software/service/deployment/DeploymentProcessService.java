@@ -71,7 +71,7 @@ public class DeploymentProcessService {
 
     @NotNull
     @Transactional(readOnly = true)
-    public PagingWrapper<DeploymentProcessResponse> getAll(
+    public PagingWrapper<DeploymentProcessResponse> getAllByCreatorId(
             @UUID @NotNull String creatorId,
             @Nullable String softwareName,
             @Nullable String customerName,
@@ -83,6 +83,28 @@ public class DeploymentProcessService {
         var page = repository
                 .findAllByCreator_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
                         creatorId,
+                        Objects.requireNonNullElse(softwareName, ""),
+                        Objects.requireNonNullElse(customerName, ""),
+                        status,
+                        pageable
+                ).map(mapper::toResponse);
+        return PagingWrapper.from(page);
+    }
+
+    @NotNull
+    @Transactional(readOnly = true)
+    public PagingWrapper<DeploymentProcessResponse> getAllByMemberId(
+            @UUID @NotNull String memberId,
+            @Nullable String softwareName,
+            @Nullable String customerName,
+            @Nullable DeploymentProcessStatus status,
+            int pageNumber,
+            int pageSize
+    ) {
+        var pageable = PageRequest.of(pageNumber, pageSize, Sort.by("createdAt").ascending());
+        var page = processHasUserRepository
+                .findAllByMember_IdAndSoftwareVersion_Software_NameContainsIgnoreCaseAndCustomer_NameContainsIgnoreCaseAndStatus(
+                        memberId,
                         Objects.requireNonNullElse(softwareName, ""),
                         Objects.requireNonNullElse(customerName, ""),
                         status,
