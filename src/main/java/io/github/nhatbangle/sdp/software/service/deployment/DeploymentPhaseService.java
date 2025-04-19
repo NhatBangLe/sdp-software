@@ -267,7 +267,7 @@ public class DeploymentPhaseService {
                 .phase(phase)
                 .user(user)
                 .isDone(isPhaseDone)
-                .description(request.description())
+                .description(Objects.requireNonNullElse(request.description(), ""))
                 .build();
         updatePhaseHistoryRepository.save(history);
 
