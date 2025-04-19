@@ -87,7 +87,7 @@ public class CustomerService {
 
         var customer = repository.save(Customer.builder()
                 .name(request.name())
-                .email(request.email())
+                .email(Objects.requireNonNullElse(request.email(), ""))
                 .creator(user)
                 .build());
         return mapper.toResponse(customer);
@@ -102,7 +102,7 @@ public class CustomerService {
     ) throws NoSuchElementException {
         var customer = findById(customerId);
         customer.setName(request.name());
-        customer.setEmail(request.email());
+        customer.setEmail(Objects.requireNonNullElse(request.email(), ""));
 
         var savedCustomer = repository.save(customer);
         return mapper.toResponse(savedCustomer);
