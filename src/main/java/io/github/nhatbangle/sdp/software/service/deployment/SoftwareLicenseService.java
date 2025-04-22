@@ -68,12 +68,12 @@ public class SoftwareLicenseService {
 
     @NotNull
     @Transactional(readOnly = true)
-    @Cacheable(key = "#phaseId")
+    @Cacheable(key = "#licenseId")
     public SoftwareLicenseResponse getById(
-            @UUID @NotNull String phaseId
+            @UUID @NotNull String licenseId
     ) throws NoSuchElementException {
-        var license = repository.findInfoById(phaseId)
-                .orElseThrow(() -> notFoundHandler(phaseId));
+        var license = repository.findInfoById(licenseId)
+                .orElseThrow(() -> notFoundHandler(licenseId));
         return mapper.toResponse(license);
     }
 
