@@ -56,14 +56,14 @@ public class SoftwareVersion {
     private Software software;
 
     @Nullable
-    @OneToMany(mappedBy = "softwareVersion")
+    @OneToMany(mappedBy = "softwareVersion", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<DeploymentProcess> deploymentProcesses;
 
     @Nullable
-    @OneToMany(mappedBy = "softwareVersion")
+    @OneToMany(mappedBy = "softwareVersion", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<Module> modules;
 
     @Nullable
-    @OneToMany(mappedBy = "version")
+    @OneToMany(mappedBy = "version", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<SoftwareDocument> documents;
 }
