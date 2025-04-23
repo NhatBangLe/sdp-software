@@ -4,6 +4,7 @@ import io.github.nhatbangle.sdp.software.constant.CacheName;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.dto.AttachmentUpdateRequest;
+import io.github.nhatbangle.sdp.software.dto.notification.NotificationSendPayload;
 import io.github.nhatbangle.sdp.software.entity.Attachment;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentPhaseHasAttachmentId;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentPhaseHasUserId;
@@ -17,6 +18,7 @@ import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcess
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentPhaseHasUserRepository;
 import io.github.nhatbangle.sdp.software.repository.deployment.UpdatePhaseHistoryRepository;
 import io.github.nhatbangle.sdp.software.service.AttachmentService;
+import io.github.nhatbangle.sdp.software.service.NotificationService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import jakarta.annotation.Nullable;
 import org.springframework.data.domain.PageRequest;
@@ -60,6 +62,7 @@ public class DeploymentPhaseService {
     private final DeploymentPhaseHasUserRepository deploymentPhaseHasUserRepository;
     private final DeploymentProcessHasUserRepository processHasUserRepository;
     private final AttachmentService atmService;
+    private final NotificationService notificationService;
 
     @NotNull
     @Transactional(readOnly = true)
@@ -225,14 +228,36 @@ public class DeploymentPhaseService {
             @UUID @NotNull String phaseId,
             @NotNull @Valid DeploymentPhaseMemberUpdateRequest request
     ) throws NoSuchElementException, IllegalArgumentException {
+        var memberId = request.memberId();
         var phase = findById(phaseId);
+        var phaseTypeName = phase.getType().getName();
+        var processId = phase.getProcess().getId();
+
         switch (request.operator()) {
             case ADD -> {
-                var member = memberIdToEntity(request.memberId(), phase);
+                var member = memberIdToEntity(memberId, phase);
                 deploymentPhaseHasUserRepository.save(member);
+
+                // send alert to member
+                notificationService.sendNotification(new NotificationSendPayload(
+                        messageSource.getMessage("deployment_phase.added_member.title", null, Locale.getDefault()),
+                        messageSource.getMessage("deployment_phase.added_member.description",
+                                new Object[]{phaseTypeName, processId}, Locale.getDefault()),
+                        List.of(memberId)
+                ));
             }
-            case REMOVE -> deploymentPhaseHasUserRepository
-                    .deleteById_PhaseIdAndId_UserId(phaseId, request.memberId());
+            case REMOVE -> {
+                deploymentPhaseHasUserRepository
+                        .deleteById_PhaseIdAndId_UserId(phaseId, request.memberId());
+
+                // send alert to member
+                notificationService.sendNotification(new NotificationSendPayload(
+                        messageSource.getMessage("deployment_phase.deleted_member.title", null, Locale.getDefault()),
+                        messageSource.getMessage("deployment_phase.deleted_member.description",
+                                new Object[]{phaseTypeName, processId}, Locale.getDefault()),
+                        List.of(memberId)
+                ));
+            }
         }
         repository.save(phase);
     }

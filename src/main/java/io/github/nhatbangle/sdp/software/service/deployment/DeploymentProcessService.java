@@ -7,6 +7,7 @@ import io.github.nhatbangle.sdp.software.constant.MailTemplateType;
 import io.github.nhatbangle.sdp.software.dto.deployment.*;
 import io.github.nhatbangle.sdp.software.dto.notification.MailSendPayload;
 import io.github.nhatbangle.sdp.software.dto.PagingWrapper;
+import io.github.nhatbangle.sdp.software.dto.notification.NotificationSendPayload;
 import io.github.nhatbangle.sdp.software.entity.MailTemplate;
 import io.github.nhatbangle.sdp.software.entity.User;
 import io.github.nhatbangle.sdp.software.entity.composite.DeploymentProcessHasModuleVersionId;
@@ -21,6 +22,7 @@ import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcess
 import io.github.nhatbangle.sdp.software.repository.deployment.DeploymentProcessRepository;
 import io.github.nhatbangle.sdp.software.service.CustomerService;
 import io.github.nhatbangle.sdp.software.service.MailTemplateService;
+import io.github.nhatbangle.sdp.software.service.NotificationService;
 import io.github.nhatbangle.sdp.software.service.UserService;
 import io.github.nhatbangle.sdp.software.service.module.ModuleVersionService;
 import io.github.nhatbangle.sdp.software.service.software.SoftwareVersionService;
@@ -65,6 +67,7 @@ public class DeploymentProcessService {
     private final RabbitTemplate rabbitTemplate;
     private final MailTemplateService mailTemplateService;
     private final ModuleVersionService moduleVersionService;
+    private final NotificationService notificationService;
 
     @Value("${app.mail-box-queue}")
     private String mailBoxQueue;
@@ -231,13 +234,33 @@ public class DeploymentProcessService {
             @NotNull @Valid DeploymentProcessMemberUpdateRequest request
     ) throws NoSuchElementException, IllegalArgumentException {
         var process = findById(processId);
+        var memberId = request.memberId();
+
         switch (request.operator()) {
             case ADD -> {
-                var member = memberIdToEntity(request.memberId(), process);
+                var member = memberIdToEntity(memberId, process);
                 processHasUserRepository.save(member);
+
+                // send alert to member
+                notificationService.sendNotification(new NotificationSendPayload(
+                        messageSource.getMessage("deployment_process.added_member.title", null, Locale.getDefault()),
+                        messageSource.getMessage("deployment_process.added_member.description",
+                                new Object[]{processId}, Locale.getDefault()),
+                        List.of(memberId)
+                ));
             }
-            case REMOVE -> processHasUserRepository
-                    .deleteById_ProcessIdAndId_UserId(processId, request.memberId());
+            case REMOVE -> {
+                processHasUserRepository
+                        .deleteById_ProcessIdAndId_UserId(processId, request.memberId());
+
+                // send alert to member
+                notificationService.sendNotification(new NotificationSendPayload(
+                        messageSource.getMessage("deployment_process.deleted_member.title", null, Locale.getDefault()),
+                        messageSource.getMessage("deployment_process.deleted_member.description",
+                                new Object[]{processId}, Locale.getDefault()),
+                        List.of(memberId)
+                ));
+            }
         }
         repository.save(process);
     }
