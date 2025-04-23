@@ -69,7 +69,8 @@ public class DeploymentPhaseService {
     public List<DeploymentPhaseResponse> getAllByProcessId(
             @Min(0) long processId
     ) {
-        var phaseStream = repository.findAllInfoByProcess_Id(processId);
+        var sort = Sort.by("numOrder").ascending();
+        var phaseStream = repository.findAllInfoByProcess_Id(processId, sort);
         return phaseStream.map(mapper::toResponse).toList();
     }
 
