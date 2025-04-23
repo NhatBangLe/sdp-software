@@ -210,10 +210,10 @@ public class DeploymentProcessService {
         var softwareVersion = process.getSoftwareVersion();
         var software = softwareVersion.getSoftware();
         var content = new String(template.getContent(), charset)
-                .replace(MailTemplatePlaceholder.CUSTOMER_NAME.name(), customer.getName())
-                .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.name(), process.getId().toString())
-                .replace(MailTemplatePlaceholder.SOFTWARE_NAME.name(), software.getName())
-                .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.name(), softwareVersion.getName());
+                .replace(MailTemplatePlaceholder.CUSTOMER_NAME.getVarName(), customer.getName())
+                .replace(MailTemplatePlaceholder.DEPLOYMENT_PROCESS_ID.getVarName(), process.getId().toString())
+                .replace(MailTemplatePlaceholder.SOFTWARE_NAME.getVarName(), software.getName())
+                .replace(MailTemplatePlaceholder.SOFTWARE_VERSION.getVarName(), softwareVersion.getName());
 
         var payload = new MailSendPayload(
                 template.getSubject(),
