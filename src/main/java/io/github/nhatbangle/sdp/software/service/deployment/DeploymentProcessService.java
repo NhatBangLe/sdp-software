@@ -275,15 +275,32 @@ public class DeploymentProcessService {
         var process = findById(processId);
         var status = request.status();
         process.setStatus(status);
-        if (status == DeploymentProcessStatus.DONE) {
-            var creator = process.getCreator();
-            try {
-                var mailTemplate = mailTemplateService
-                        .findByUserIdAndType(creator.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
-                sendProcessDoneAlertMail(mailTemplate, process);
-            } catch (NoSuchElementException e) {
-                log.warn("Could not find mail template for process with id {}", processId);
-                log.debug(e.getMessage(), e);
+
+        switch (status) {
+            case IN_PROGRESS -> {
+                var members = process.getUsers();
+                if (members != null && !members.isEmpty()) {
+                    var memberIds = members.stream()
+                            .map(user -> user.getId().getUserId())
+                            .toList();
+                    notificationService.sendNotification(new NotificationSendPayload(
+                            messageSource.getMessage("deployment_process.in_progress.title", null, Locale.getDefault()),
+                            messageSource.getMessage("deployment_process.in_progress.description",
+                                    new Object[]{processId}, Locale.getDefault()),
+                            memberIds
+                    ));
+                }
+            }
+            case DONE -> {
+                var creator = process.getCreator();
+                try {
+                    var mailTemplate = mailTemplateService
+                            .findByUserIdAndType(creator.getId(), MailTemplateType.SOFTWARE_DEPLOYED_SUCCESSFULLY);
+                    sendProcessDoneAlertMail(mailTemplate, process);
+                } catch (NoSuchElementException e) {
+                    log.warn("Could not find mail template for process with id {}", processId);
+                    log.debug(e.getMessage(), e);
+                }
             }
         }
 
